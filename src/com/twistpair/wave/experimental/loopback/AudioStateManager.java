@@ -451,7 +451,7 @@ public class AudioStateManager
     {
         Log.d(TAG, "startBluetoothSco()");
 
-        setBluetoothScoOn(true);
+        //setBluetoothScoOn(true);
 
         if (true)
         {
@@ -530,7 +530,9 @@ public class AudioStateManager
     public void stopBluetoothSco()
     {
         Log.d(TAG, "stopBluetoothSco()");
-        setBluetoothScoOn(false);
+
+        //setBluetoothScoOn(false);
+
         Log.d(TAG, "mAudioManager.stopBluetoothSco()");
         mAudioManager.stopBluetoothSco(); // API 8
     }

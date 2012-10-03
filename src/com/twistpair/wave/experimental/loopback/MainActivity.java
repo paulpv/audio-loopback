@@ -1,7 +1,6 @@
 package com.twistpair.wave.experimental.loopback;
 
 import android.media.AudioManager;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,8 +12,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Toast;
 
 import com.twistpair.wave.experimental.loopback.AudioStateManager.AudioStateListener;
@@ -23,8 +21,6 @@ public class MainActivity //
                 extends //
                 FragmentActivity //
                 implements //
-                CompoundButton.OnCheckedChangeListener, //
-                RadioGroup.OnCheckedChangeListener, //
                 AudioStateListener //
 {
     private static final String  TAG                                 = MainActivity.class.getSimpleName();
@@ -52,15 +48,6 @@ public class MainActivity //
 
     /**
      * <ul>
-     * <li>msg.arg1: mAudioBuffers.size()</li>
-     * <li>msg.arg2: mAudioBuffersPool.size()</li>
-     * <li>msg.obj: unused</li>
-     * </ul>
-     */
-    public static final int      MSG_UPDATE_BUFFER_COUNT             = 1;
-
-    /**
-     * <ul>
      * <li>msg.arg1: unused</li>
      * <li>msg.arg2: unused</li>
      * <li>msg.obj: unused</li>
@@ -79,15 +66,6 @@ public class MainActivity //
 
     private Handler              mHandler;
     private AudioStateManager    mAudioStateManager;
-
-    private CompoundButton       mCheckBoxSetBluetoothScoOn;
-    private CompoundButton       mCheckBoxSetSpeakerphoneOn;
-    private RadioGroup           mRadioGroupSourceAudioRecord;
-    private CompoundButton       mToggleButtonSource;
-    //private TextView                mTextViewBufferCount;
-    //private TextView                mTextViewBufferPoolCount;
-    private RadioGroup           mRadioGroupOutputAudioTrack;
-    private CompoundButton       mToggleButtonSpeaker;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -130,100 +108,31 @@ public class MainActivity //
         //
         //
         //
-        mCheckBoxSetBluetoothScoOn = (CompoundButton) findViewById(R.id.checkBoxSetBluetoothScoOn);
-        mCheckBoxSetBluetoothScoOn.setOnCheckedChangeListener(this);
-
-        mCheckBoxSetSpeakerphoneOn = (CompoundButton) findViewById(R.id.checkBoxSetSpeakerphoneOn);
-        mCheckBoxSetSpeakerphoneOn.setOnCheckedChangeListener(this);
-
-        //
-        //
-        //
-        RadioButton radioButtonInputAudioRecord = (RadioButton) findViewById(R.id.radioButtonSourceAudioRecord);
-
-        mRadioGroupSourceAudioRecord = (RadioGroup) findViewById(R.id.radioGroupSourceAudioRecord);
-
-        RadioButton radioButtonSourceAudioRecordCamcorder =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordCamcorder);
-        radioButtonSourceAudioRecordCamcorder.setTag(MediaRecorder.AudioSource.CAMCORDER);
-        RadioButton radioButtonSourceAudioRecordDefault = (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordDefault);
-        radioButtonSourceAudioRecordDefault.setTag(MediaRecorder.AudioSource.DEFAULT);
-        RadioButton radioButtonSourceAudioRecordMic = (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordMic);
-        radioButtonSourceAudioRecordMic.setTag(MediaRecorder.AudioSource.MIC);
-        RadioButton radioButtonSourceAudioRecordVoiceCall =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceCall);
-        radioButtonSourceAudioRecordVoiceCall.setTag(MediaRecorder.AudioSource.VOICE_CALL);
-        RadioButton radioButtonSourceAudioRecordVoiceCommunication =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceCommunication);
-        radioButtonSourceAudioRecordVoiceCommunication.setTag(MediaRecorder.AudioSource.VOICE_COMMUNICATION);
-        RadioButton radioButtonSourceAudioRecordVoiceDownlink =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceDownlink);
-        radioButtonSourceAudioRecordVoiceDownlink.setTag(MediaRecorder.AudioSource.VOICE_DOWNLINK);
-        RadioButton radioButtonSourceAudioRecordVoiceRecognition =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceRecognition);
-        radioButtonSourceAudioRecordVoiceRecognition.setTag(MediaRecorder.AudioSource.VOICE_RECOGNITION);
-        RadioButton radioButtonSourceAudioRecordVoiceUplink =
-            (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceUplink);
-        radioButtonSourceAudioRecordVoiceUplink.setTag(MediaRecorder.AudioSource.VOICE_UPLINK);
-
-        radioButtonInputAudioRecord.setOnCheckedChangeListener(this);
-        radioButtonInputAudioRecord.setChecked(true);
-
-        mToggleButtonSource = (CompoundButton) findViewById(R.id.toggleButtonSource);
-        mToggleButtonSource.setOnCheckedChangeListener(this);
-
-        //
-        //
-        //
-        /*
-        mTextViewBufferCount = (TextView) findViewById(R.id.textViewBufferCount);
-        mTextViewBufferCount.setOnClickListener(new OnClickListener()
+        CompoundButton checkBoxSetBluetoothScoOn = (CompoundButton) findViewById(R.id.checkBoxSetBluetoothScoOn);
+        checkBoxSetBluetoothScoOn.setOnCheckedChangeListener(new OnCheckedChangeListener()
         {
-            public void onClick(View v)
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                // TODO:(pv) Prompt and clear mAudioBuffers...
-                //mAudioBuffers.maintenance(true);
+                if (mAudioStateManager.isBluetoothScoOn() != isChecked)
+                {
+                    mAudioStateManager.setBluetoothScoOn(isChecked);
+                }
             }
         });
-        mTextViewBufferPoolCount = (TextView) findViewById(R.id.textViewBufferPoolCount);
-        mTextViewBufferPoolCount.setOnClickListener(new OnClickListener()
+
+        CompoundButton checkBoxSetSpeakerphoneOn = (CompoundButton) findViewById(R.id.checkBoxSetSpeakerphoneOn);
+        checkBoxSetSpeakerphoneOn.setOnCheckedChangeListener(new OnCheckedChangeListener()
         {
-            public void onClick(View v)
+
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                // TODO:(pv) Prompt and clear mAudioBuffersPool...
-                //mAudioBuffersPool.maintenance(true);
+                if (mAudioStateManager.isSpeakerphoneOn() != isChecked)
+                {
+                    mAudioStateManager.setSpeakerphoneOn(isChecked);
+                }
             }
         });
-        */
 
-        //
-        //
-        //
-        RadioButton radioButtonOutputAudioTrack = (RadioButton) findViewById(R.id.radioButtonOutputAudioTrack);
-
-        mRadioGroupOutputAudioTrack = (RadioGroup) findViewById(R.id.radioGroupOutputAudioTrack);
-        mRadioGroupOutputAudioTrack.setOnCheckedChangeListener(this);
-
-        RadioButton radioButtonOutputAudioTrackAlarm = (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackAlarm);
-        radioButtonOutputAudioTrackAlarm.setTag(AudioManager.STREAM_ALARM);
-        RadioButton radioButtonOutputAudioTrackMusic = (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackMusic);
-        radioButtonOutputAudioTrackMusic.setTag(AudioManager.STREAM_MUSIC);
-        RadioButton radioButtonOutputAudioTrackNotification =
-            (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackNotification);
-        radioButtonOutputAudioTrackNotification.setTag(AudioManager.STREAM_NOTIFICATION);
-        RadioButton radioButtonOutputAudioTrackRing = (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackRing);
-        radioButtonOutputAudioTrackRing.setTag(AudioManager.STREAM_RING);
-        RadioButton radioButtonOutputAudioTrackSystem = (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackSystem);
-        radioButtonOutputAudioTrackSystem.setTag(AudioManager.STREAM_SYSTEM);
-        RadioButton radioButtonOutputAudioTrackVoiceCall =
-            (RadioButton) findViewById(R.id.radioButtonOutputAudioTrackVoiceCall);
-        radioButtonOutputAudioTrackVoiceCall.setTag(AudioManager.STREAM_VOICE_CALL);
-
-        radioButtonOutputAudioTrack.setOnCheckedChangeListener(this);
-        radioButtonOutputAudioTrack.setChecked(true);
-
-        mToggleButtonSpeaker = (CompoundButton) findViewById(R.id.toggleButtonSpeaker);
-        mToggleButtonSpeaker.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -260,12 +169,6 @@ public class MainActivity //
     }
 
     @Override
-    protected void onPause()
-    {
-        super.onPause();
-    }
-
-    @Override
     protected void onDestroy()
     {
         super.onDestroy();
@@ -284,149 +187,6 @@ public class MainActivity //
         finish();
     }
 
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-    {
-        int buttonViewId = buttonView.getId();
-        switch (buttonViewId)
-        {
-            case R.id.checkBoxSetBluetoothScoOn:
-            {
-                if (mAudioStateManager.isBluetoothScoOn() != isChecked)
-                {
-                    mAudioStateManager.setBluetoothScoOn(isChecked);
-                }
-                break;
-            }
-            case R.id.checkBoxSetSpeakerphoneOn:
-            {
-                if (mAudioStateManager.isSpeakerphoneOn() != isChecked)
-                {
-                    mAudioStateManager.setSpeakerphoneOn(isChecked);
-                }
-                break;
-            }
-
-            case R.id.radioButtonSourceAudioRecord:
-                if (isChecked)
-                {
-                }
-                break;
-
-            case R.id.radioButtonOutputAudioTrack:
-                if (isChecked)
-                {
-                }
-                break;
-
-            //
-            // TODO:(pv) Need to use AsyncTask here, otherwise rotation can cause the threads to continue running and later misbehave
-            //
-            case R.id.toggleButtonSource:
-            {
-                audioStopReadingMp3();
-                audioStopReadingMicrophone();
-
-                if (isChecked)
-                {
-                    int checkedRadioButtonId = mRadioGroupSourceAudioRecord.getCheckedRadioButtonId();
-                    RadioButton checkedRadioButton = (RadioButton) findViewById(checkedRadioButtonId);
-                    int audioSource = ((Integer) checkedRadioButton.getTag()).intValue();
-
-                    audioStartReadingMicrophone();
-                }
-
-                break;
-            }
-            case R.id.toggleButtonSpeaker:
-            {
-                audioStopPlayingSource();
-
-                if (isChecked)
-                {
-                    int checkedRadioButtonId = mRadioGroupOutputAudioTrack.getCheckedRadioButtonId();
-                    RadioButton checkedRadioButton = (RadioButton) findViewById(checkedRadioButtonId);
-                    int streamType = ((Integer) checkedRadioButton.getTag()).intValue();
-
-                    audioStartPlayingSource();
-                }
-                break;
-            }
-        }
-    }
-
-    public void onCheckedChanged(RadioGroup radioGroup, int checkedId)
-    {
-        Log.i(TAG, "onCheckedChanged(" + radioGroup + ", " + checkedId + ")");
-        int radioGroupId = radioGroup.getId();
-        switch (radioGroupId)
-        {
-            case R.id.radioGroupSourceAudioRecord:
-            {
-                Integer audioSource = (Integer) getRadioButtonTag(mRadioGroupSourceAudioRecord, checkedId);
-                break;
-            }
-            case R.id.radioGroupOutputAudioTrack:
-            {
-                Integer streamType = (Integer) getRadioButtonTag(mRadioGroupOutputAudioTrack, checkedId);
-                break;
-            }
-        }
-    }
-
-    private static Object getCheckedRadioButtonTag(RadioGroup radioGroup)
-    {
-        int checkedButtonId = radioGroup.getCheckedRadioButtonId();
-        return getRadioButtonTag(radioGroup, checkedButtonId);
-    }
-
-    private static Object getRadioButtonTag(View view, int radioButtonId)
-    {
-        if (radioButtonId != -1)
-        {
-            RadioButton radioButton = (RadioButton) view.findViewById(radioButtonId);
-            Object radioButtonTag = radioButton.getTag();
-            return radioButtonTag;
-        }
-        return null;
-    }
-
-    private static void checkRadioButtonWithTag(RadioGroup radioGroup, Object tag)
-    {
-        if (tag == null)
-        {
-            throw new IllegalArgumentException("tag cannot be null");
-        }
-
-        Object radioButtonTag = getCheckedRadioButtonTag(radioGroup);
-        if (radioButtonTag != null && tag.equals(radioButtonTag))
-        {
-            Log.w(TAG, "radioButton w/ specified tag already checked; nothing to do; return;");
-            return;
-        }
-
-        int count = radioGroup.getChildCount();
-        for (int i = 0; i < count; i++)
-        {
-            RadioButton radioButton = (RadioButton) radioGroup.getChildAt(i);
-            radioButtonTag = radioButton.getTag();
-            if (tag.equals(radioButtonTag))
-            {
-                radioButton.setChecked(true);
-                break;
-            }
-        }
-    }
-
-    private static void enableRadioButtons(RadioGroup radioGroup, boolean enabled)
-    {
-        int count = radioGroup.getChildCount();
-        for (int i = 0; i < count; i++)
-        {
-            RadioButton radioButton = (RadioButton) radioGroup.getChildAt(i);
-            radioButton.setEnabled(enabled);
-        }
-    }
-
     protected void updateScreen()
     {
         if (DBG)
@@ -434,7 +194,6 @@ public class MainActivity //
             Log.d(TAG, "updateScreen()...");
         }
 
-        int audioMode = mAudioStateManager.getMode();
         //boolean isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected();
         //boolean isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected();
         boolean isBluetoothScoOn = mAudioStateManager.isBluetoothScoOn();
@@ -448,8 +207,10 @@ public class MainActivity //
         //
         //
         //
-        mCheckBoxSetBluetoothScoOn.setChecked(isBluetoothScoOn);
-        mCheckBoxSetSpeakerphoneOn.setChecked(isSpeakerphoneOn);
+        CompoundButton checkBoxSetBluetoothScoOn = (CompoundButton) findViewById(R.id.checkBoxSetBluetoothScoOn);
+        CompoundButton checkBoxSetSpeakerphoneOn = (CompoundButton) findViewById(R.id.checkBoxSetSpeakerphoneOn);
+        checkBoxSetBluetoothScoOn.setChecked(isBluetoothScoOn);
+        checkBoxSetSpeakerphoneOn.setChecked(isSpeakerphoneOn);
     }
 
     public void handleMessage(Message msg)
@@ -461,17 +222,6 @@ public class MainActivity //
 
         switch (msg.what)
         {
-            case MSG_UPDATE_BUFFER_COUNT:
-            {
-                msg.getTarget().removeMessages(MSG_UPDATE_BUFFER_COUNT);
-
-                int audioBufferCount = msg.arg1;
-                int audioBufferPoolCount = msg.arg2;
-                //mTextViewBufferCount.setText(String.valueOf(audioBufferCount));
-                //mTextViewBufferPoolCount.setText(String.valueOf(audioBufferPoolCount));
-                break;
-            }
-
             case MSG_UPDATE_BLUETOOTH_INDICATION:
             {
                 if (DBG)
