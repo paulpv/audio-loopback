@@ -44,12 +44,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="setBluetoothScoOn(checked)" />
-
-            <CheckBox
-                android:id="@+id/checkBoxSetSpeakerphoneOn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="setSpeakerphoneOn(checked)" />
         </LinearLayout>
     </LinearLayout>
 

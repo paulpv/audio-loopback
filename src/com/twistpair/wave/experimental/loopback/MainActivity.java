@@ -53,7 +53,7 @@ public class MainActivity //
      * <li>msg.obj: unused</li>
      * </ul>
      */
-    public static final int      MSG_UPDATE_BLUETOOTH_INDICATION     = 2;
+    public static final int      MSG_UPDATE_BLUETOOTH_INDICATION     = 1;
 
     /**
      * <ul>
@@ -62,7 +62,7 @@ public class MainActivity //
      * <li>msg.obj: unused</li>
      * </ul>
      */
-    public static final int      MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE = 3;
+    public static final int      MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE = 2;
 
     private Handler              mHandler;
     private AudioStateManager    mAudioStateManager;
@@ -96,6 +96,7 @@ public class MainActivity //
                 mAudioStateManager.startBluetoothSco();
             }
         });
+
         Button buttonStopBluetoothSco = (Button) findViewById(R.id.buttonStopBluetoothSco);
         buttonStopBluetoothSco.setOnClickListener(new OnClickListener()
         {
@@ -119,20 +120,6 @@ public class MainActivity //
                 }
             }
         });
-
-        CompoundButton checkBoxSetSpeakerphoneOn = (CompoundButton) findViewById(R.id.checkBoxSetSpeakerphoneOn);
-        checkBoxSetSpeakerphoneOn.setOnCheckedChangeListener(new OnCheckedChangeListener()
-        {
-
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
-                if (mAudioStateManager.isSpeakerphoneOn() != isChecked)
-                {
-                    mAudioStateManager.setSpeakerphoneOn(isChecked);
-                }
-            }
-        });
-
     }
 
     @Override
@@ -187,32 +174,6 @@ public class MainActivity //
         finish();
     }
 
-    protected void updateScreen()
-    {
-        if (DBG)
-        {
-            Log.d(TAG, "updateScreen()...");
-        }
-
-        //boolean isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected();
-        //boolean isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected();
-        boolean isBluetoothScoOn = mAudioStateManager.isBluetoothScoOn();
-        boolean isSpeakerphoneOn = mAudioStateManager.isSpeakerphoneOn();
-
-        //
-        //
-        //
-        invalidateOptionsMenu();
-
-        //
-        //
-        //
-        CompoundButton checkBoxSetBluetoothScoOn = (CompoundButton) findViewById(R.id.checkBoxSetBluetoothScoOn);
-        CompoundButton checkBoxSetSpeakerphoneOn = (CompoundButton) findViewById(R.id.checkBoxSetSpeakerphoneOn);
-        checkBoxSetBluetoothScoOn.setChecked(isBluetoothScoOn);
-        checkBoxSetSpeakerphoneOn.setChecked(isSpeakerphoneOn);
-    }
-
     public void handleMessage(Message msg)
     {
         if (VDBG)
@@ -226,43 +187,24 @@ public class MainActivity //
             {
                 if (DBG)
                 {
-                    Log.d(TAG, "REQUEST_UPDATE_BLUETOOTH_INDICATION");
+                    Log.d(TAG, "MSG_UPDATE_BLUETOOTH_INDICATION");
                 }
 
-                // The bluetooth headset state changed, so some UI
-                // elements may need to update.  (There's no need to
-                // look up the current state here, since any UI
-                // elements that care about the bluetooth state get it
-                // directly from PhoneApp.showBluetoothIndication().)
                 updateScreen();
                 break;
             }
 
             case MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE:
             {
+                if (DBG)
+                {
+                    Log.d(TAG, "MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE");
+                }
+
+                updateScreen();
                 break;
             }
         }
-    }
-
-    public void onSpeakerphoneOn()
-    {
-        Log.i(TAG, "onSpeakerphoneOn()");
-    }
-
-    public void onSpeakerphoneOff()
-    {
-        Log.i(TAG, "onSpeakerphoneOff()");
-    }
-
-    public void onWiredHeadsetConnection(int state, String name, int microphone)
-    {
-        Log.i(TAG, "onWiredHeadsetConnection(state=" + state + ", name=" + name + ", microphone=" + microphone + ")");
-    }
-
-    public void onDockConnection(int state)
-    {
-        Log.i(TAG, "onDockConnection(" + state + ")");
     }
 
     public void onBluetoothHeadsetConnected()
@@ -342,7 +284,7 @@ public class MainActivity //
 
         // Force SCO off to try to repair what appears to be internal BT SCO state bugs in the OS.
         // Sometimes the only way to get SCO to connect is to reboot the phone and/or turn BT off and then back on.
-        mAudioStateManager.stopBluetoothSco();
+        //mAudioStateManager.stopBluetoothSco();
 
         /*
         if (mPreviousAudioOutputAudioTrackStreamType == -1)
@@ -366,63 +308,26 @@ public class MainActivity //
         .sendToTarget();
     }
 
-    private void audioStartPlayingSource()
+    protected void updateScreen()
     {
-        // TODO Auto-generated method stub
-    }
-
-    private void audioStopPlayingSource()
-    {
-        // TODO Auto-generated method stub
-    }
-
-    private void audioStartReadingMicrophone()
-    {
-        // TODO Auto-generated method stub
-    }
-
-    private void audioStopReadingMicrophone()
-    {
-        // TODO Auto-generated method stub
-    }
-
-    private void audioStopReadingMp3()
-    {
-        // TODO Auto-generated method stub
-    }
-
-    public void onAudioPlayerBuffer()
-    {
-        if (VDBG)
+        if (DBG)
         {
-            Log.i(TAG, "onAudioPlayerBuffer()");
-        }
-        onAudioBuffer();
-    }
-
-    public void onAudioRecorderBuffer()
-    {
-        if (VDBG)
-        {
-            Log.i(TAG, "onAudioRecorderBuffer()");
-        }
-        onAudioBuffer();
-    }
-
-    public void onAudioBuffer()
-    {
-        /*
-        int audioBufferCount = mAudioBuffers.size();
-        int audioBufferPoolCount = mAudioBuffersPool.size();
-
-        if (VDBG)
-        {
-            Log.i(TAG, "mAudioBuffers.size()=" + audioBufferCount + ", mAudioBuffersPool.size()=" + audioBufferPoolCount);
+            Log.d(TAG, "updateScreen()...");
         }
 
-        mHandler //
-        .obtainMessage(MSG_UPDATE_BUFFER_COUNT, audioBufferCount, audioBufferPoolCount) //
-        .sendToTarget();
-        */
+        //boolean isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected();
+        //boolean isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected();
+        boolean isBluetoothScoOn = mAudioStateManager.isBluetoothScoOn();
+
+        //
+        //
+        //
+        invalidateOptionsMenu();
+
+        //
+        //
+        //
+        CompoundButton checkBoxSetBluetoothScoOn = (CompoundButton) findViewById(R.id.checkBoxSetBluetoothScoOn);
+        checkBoxSetBluetoothScoOn.setChecked(isBluetoothScoOn);
     }
 }
