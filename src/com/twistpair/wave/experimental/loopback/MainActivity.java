@@ -1,11 +1,9 @@
 package com.twistpair.wave.experimental.loopback;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -17,66 +15,79 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.twistpair.wave.experimental.loopback.FileBrowserDialog.FileBrowserDialogListener;
-import com.twistpair.wave.experimental.loopback.audio.AudioStateManager;
+import com.twistpair.wave.experimental.loopback.AudioStateManager.AudioStateListener;
 
-//
-// Audio ideas came from TPS code and:
-//  http://android-er.blogspot.com/2012/06/audiorecord-and-audiotrack.html
-//
 public class MainActivity //
                 extends //
                 FragmentActivity //
                 implements //
                 CompoundButton.OnCheckedChangeListener, //
                 RadioGroup.OnCheckedChangeListener, //
-                FileBrowserDialogListener //
+                AudioStateListener //
 {
-    private static final String     TAG                  = MainActivity.class.getSimpleName();
-
-    private static final boolean    DBG                  = (LoopbackApp.DBG_LEVEL >= 1);
-    private static final boolean    VDBG                 = (LoopbackApp.DBG_LEVEL >= 2);
-
-    private static final String     AUDIO_FILE_ENDS_WITH = ".mp3";
-
-    private LoopbackApp             mApp;
-    private LoopbackPreferences     mPreferences;
-
-    private CompoundButton          mCheckBoxSetBluetoothScoOn;
-    private CompoundButton          mCheckBoxSetSpeakerphoneOn;
-    private CompoundButton          mRadioButtonModeInCall;
-    private CompoundButton          mRadioButtonModeInCommunication;
-    private CompoundButton          mRadioButtonModeNormal;
-    private CompoundButton          mRadioButtonModeRingtone;
-    private RadioButton             mRadioButtonSourceFile;
-    private TextView                mTextViewSourceFile;
-    private RadioButton             mRadioButtonSourceAudioRecord;
-    private RadioGroup              mRadioGroupSourceAudioRecord;
-    private CompoundButton          mToggleButtonSource;
-    private TextView                mTextViewBufferCount;
-    private TextView                mTextViewBufferPoolCount;
-    private RadioGroup              mRadioGroupOutputAudioTrack;
-    private CompoundButton          mToggleButtonSpeaker;
+    private static final String  TAG                                 = MainActivity.class.getSimpleName();
 
     /**
-     * The audio sources radio buttons cannot be wrapped in a RadioGroup because they are split between layout views.
-     * This collection is used to track the RadioButtons and determine which radio button is selected.
+     * App-wide debug level:
+     *   0 - no debug logging
+     *   1 - normal debug logging if ro.debuggable is set (which is true in
+     *       "eng" and "userdebug" builds but not "user" builds)
+     *   2 - ultra-verbose debug logging
+     *
+     * Most individual classes in the phone app have a local DBG constant,
+     * typically set to
+     *   (PhoneApp.DBG_LEVEL >= 1)
+     * or else
+     *   (PhoneApp.DBG_LEVEL >= 2)
+     * depending on the desired verbosity.
+     *
+     * ***** DO NOT RELEASE WITH DBG_LEVEL > 0 *****
      */
-    private final List<RadioButton> mAudioSources        = new ArrayList<RadioButton>();
+    public static int            DBG_LEVEL                           = 1;
 
-    @Override
-    protected void onSaveInstanceState(Bundle savedInstanceState)
-    {
-        String audioInputFilePath = ((TextView) findViewById(R.id.textViewSourceFile)).getText().toString();
+    private static final boolean DBG                                 = (MainActivity.DBG_LEVEL >= 1);
+    private static final boolean VDBG                                = (MainActivity.DBG_LEVEL >= 2);
 
-        savedInstanceState.putString("audioInputFilePath", audioInputFilePath);
+    /**
+     * <ul>
+     * <li>msg.arg1: mAudioBuffers.size()</li>
+     * <li>msg.arg2: mAudioBuffersPool.size()</li>
+     * <li>msg.obj: unused</li>
+     * </ul>
+     */
+    public static final int      MSG_UPDATE_BUFFER_COUNT             = 1;
 
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
+    /**
+     * <ul>
+     * <li>msg.arg1: unused</li>
+     * <li>msg.arg2: unused</li>
+     * <li>msg.obj: unused</li>
+     * </ul>
+     */
+    public static final int      MSG_UPDATE_BLUETOOTH_INDICATION     = 2;
+
+    /**
+     * <ul>
+     * <li>msg.arg1: unused</li>
+     * <li>msg.arg2: unused</li>
+     * <li>msg.obj: unused</li>
+     * </ul>
+     */
+    public static final int      MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE = 3;
+
+    private Handler              mHandler;
+    private AudioStateManager    mAudioStateManager;
+
+    private CompoundButton       mCheckBoxSetBluetoothScoOn;
+    private CompoundButton       mCheckBoxSetSpeakerphoneOn;
+    private RadioGroup           mRadioGroupSourceAudioRecord;
+    private CompoundButton       mToggleButtonSource;
+    //private TextView                mTextViewBufferCount;
+    //private TextView                mTextViewBufferPoolCount;
+    private RadioGroup           mRadioGroupOutputAudioTrack;
+    private CompoundButton       mToggleButtonSpeaker;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -84,34 +95,17 @@ public class MainActivity //
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mApp = LoopbackApp.getInstance();
-        mPreferences = mApp.getPreferences();
-
-        final String audioInputFilePath;
-
-        if (savedInstanceState == null)
+        mHandler = new Handler()
         {
-            audioInputFilePath = mPreferences.getAudioInputFilePath();
-        }
-        else
-        {
-            audioInputFilePath = savedInstanceState.getString("audioInputFilePath");
-        }
+            @Override
+            public void handleMessage(Message msg)
+            {
+                MainActivity.this.handleMessage(msg);
+            }
+        };
 
-        //
-        //
-        //
-        mRadioButtonModeInCall = (CompoundButton) findViewById(R.id.radioButtonModeInCall);
-        mRadioButtonModeInCall.setOnCheckedChangeListener(this);
-
-        mRadioButtonModeInCommunication = (CompoundButton) findViewById(R.id.radioButtonModeInCommunication);
-        mRadioButtonModeInCommunication.setOnCheckedChangeListener(this);
-
-        mRadioButtonModeNormal = (CompoundButton) findViewById(R.id.radioButtonModeNormal);
-        mRadioButtonModeNormal.setOnCheckedChangeListener(this);
-
-        mRadioButtonModeRingtone = (CompoundButton) findViewById(R.id.radioButtonModeRingtone);
-        mRadioButtonModeRingtone.setOnCheckedChangeListener(this);
+        mAudioStateManager = new AudioStateManager(this, this);
+        mAudioStateManager.start();
 
         //
         //
@@ -121,7 +115,7 @@ public class MainActivity //
         {
             public void onClick(View v)
             {
-                mApp.getAudioStateManager().startBluetoothSco();
+                mAudioStateManager.startBluetoothSco();
             }
         });
         Button buttonStopBluetoothSco = (Button) findViewById(R.id.buttonStopBluetoothSco);
@@ -129,7 +123,7 @@ public class MainActivity //
         {
             public void onClick(View v)
             {
-                mApp.getAudioStateManager().stopBluetoothSco();
+                mAudioStateManager.stopBluetoothSco();
             }
         });
 
@@ -145,25 +139,7 @@ public class MainActivity //
         //
         //
         //
-        mRadioButtonSourceFile = (RadioButton) findViewById(R.id.radioButtonSourceFile);
-        mAudioSources.add(mRadioButtonSourceFile);
-        mRadioButtonSourceFile.setOnCheckedChangeListener(this);
-
-        mTextViewSourceFile = (TextView) findViewById(R.id.textViewSourceFile);
-        mTextViewSourceFile.setText(audioInputFilePath);
-        mTextViewSourceFile.setOnClickListener(new OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                // Pass in any existing path...
-                String filePath = ((TextView) v).getText().toString();
-
-                FileBrowserDialog.showDialog(MainActivity.this, filePath, AUDIO_FILE_ENDS_WITH);
-            }
-        });
-
-        mRadioButtonSourceAudioRecord = (RadioButton) findViewById(R.id.radioButtonSourceAudioRecord);
-        mAudioSources.add(mRadioButtonSourceAudioRecord);
+        RadioButton radioButtonInputAudioRecord = (RadioButton) findViewById(R.id.radioButtonSourceAudioRecord);
 
         mRadioGroupSourceAudioRecord = (RadioGroup) findViewById(R.id.radioGroupSourceAudioRecord);
 
@@ -190,14 +166,8 @@ public class MainActivity //
             (RadioButton) findViewById(R.id.radioButtonSourceAudioRecordVoiceUplink);
         radioButtonSourceAudioRecordVoiceUplink.setTag(MediaRecorder.AudioSource.VOICE_UPLINK);
 
-        mRadioButtonSourceAudioRecord.setOnCheckedChangeListener(this);
-        mRadioButtonSourceAudioRecord.setChecked(true);
-
-        int prefAudioInputSourceType = mPreferences.getAudioInputAudioRecordSourceType();
-        Log.i(TAG,
-                        "onCreate: Selecting RadioButton w/ tag==prefAudioInputSourceType="
-                                        + AudioStateManager.audioInputAudioSourceToString(prefAudioInputSourceType));
-        checkRadioButtonWithTag(mRadioGroupSourceAudioRecord, prefAudioInputSourceType);
+        radioButtonInputAudioRecord.setOnCheckedChangeListener(this);
+        radioButtonInputAudioRecord.setChecked(true);
 
         mToggleButtonSource = (CompoundButton) findViewById(R.id.toggleButtonSource);
         mToggleButtonSource.setOnCheckedChangeListener(this);
@@ -205,6 +175,7 @@ public class MainActivity //
         //
         //
         //
+        /*
         mTextViewBufferCount = (TextView) findViewById(R.id.textViewBufferCount);
         mTextViewBufferCount.setOnClickListener(new OnClickListener()
         {
@@ -223,6 +194,7 @@ public class MainActivity //
                 //mAudioBuffersPool.maintenance(true);
             }
         });
+        */
 
         //
         //
@@ -250,12 +222,6 @@ public class MainActivity //
         radioButtonOutputAudioTrack.setOnCheckedChangeListener(this);
         radioButtonOutputAudioTrack.setChecked(true);
 
-        int prefAudioOutputStreamType = mPreferences.getAudioOutputAudioTrackStreamType();
-        Log.i(TAG,
-                        "onCreate: Selecting RadioButton w/ tag==prefAudioOutputStreamType="
-                                        + AudioStateManager.audioOutputStreamTypeToString(prefAudioOutputStreamType));
-        checkRadioButtonWithTag(mRadioGroupOutputAudioTrack, prefAudioOutputStreamType);
-
         mToggleButtonSpeaker = (CompoundButton) findViewById(R.id.toggleButtonSpeaker);
         mToggleButtonSpeaker.setOnCheckedChangeListener(this);
     }
@@ -270,9 +236,8 @@ public class MainActivity //
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        AudioStateManager audioStateManager = mApp.getAudioStateManager();
-        boolean isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected();
-        boolean isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected();
+        boolean isBluetoothHeadsetConnected = mAudioStateManager.isBluetoothHeadsetConnected();
+        boolean isBluetoothHeadsetAudioConnected = mAudioStateManager.isBluetoothHeadsetAudioConnected();
 
         MenuItem menuBluetoothHeadsetOn = menu.findItem(R.id.menu_bluetoothheadset_on);
         MenuItem menuBluetoothHeadsetOff = menu.findItem(R.id.menu_bluetoothheadset_off);
@@ -291,7 +256,6 @@ public class MainActivity //
     protected void onResume()
     {
         super.onResume();
-        mApp.addForegroundContext(this);
         updateScreen();
     }
 
@@ -299,14 +263,18 @@ public class MainActivity //
     protected void onPause()
     {
         super.onPause();
-        mApp.removeForegroundContext(this);
     }
 
     @Override
     protected void onDestroy()
     {
-        // TODO stop threads?
         super.onDestroy();
+
+        if (mAudioStateManager != null)
+        {
+            mAudioStateManager.stop();
+            mAudioStateManager = null;
+        }
     }
 
     @Override
@@ -321,119 +289,32 @@ public class MainActivity //
         int buttonViewId = buttonView.getId();
         switch (buttonViewId)
         {
-            case R.id.radioButtonModeInCall:
-                if (isChecked)
-                {
-                    Log.i(TAG, "mAudioManager.setMode(AudioManager.MODE_IN_CALL)");
-                    mApp.getAudioStateManager().setMode(AudioManager.MODE_IN_CALL);
-                }
-                break;
-            case R.id.radioButtonModeInCommunication:
-                if (isChecked)
-                {
-                    Log.i(TAG, "mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION)");
-                    mApp.getAudioStateManager().setMode(AudioManager.MODE_IN_COMMUNICATION);
-                }
-                break;
-            case R.id.radioButtonModeNormal:
-                if (isChecked)
-                {
-                    Log.i(TAG, "mAudioManager.setMode(AudioManager.MODE_NORMAL)");
-                    mApp.getAudioStateManager().setMode(AudioManager.MODE_NORMAL);
-                }
-                break;
-            case R.id.radioButtonModeRingtone:
-                if (isChecked)
-                {
-                    Log.i(TAG, "mAudioManager.setMode(AudioManager.MODE_RINGTONE)");
-                    mApp.getAudioStateManager().setMode(AudioManager.MODE_RINGTONE);
-                }
-                break;
-
             case R.id.checkBoxSetBluetoothScoOn:
             {
-                AudioStateManager audioStateManager = mApp.getAudioStateManager();
-                if (audioStateManager.isBluetoothScoOn() != isChecked)
+                if (mAudioStateManager.isBluetoothScoOn() != isChecked)
                 {
-                    audioStateManager.setBluetoothScoOn(isChecked);
+                    mAudioStateManager.setBluetoothScoOn(isChecked);
                 }
                 break;
             }
             case R.id.checkBoxSetSpeakerphoneOn:
             {
-                AudioStateManager audioStateManager = mApp.getAudioStateManager();
-                if (audioStateManager.isSpeakerphoneOn() != isChecked)
+                if (mAudioStateManager.isSpeakerphoneOn() != isChecked)
                 {
-                    audioStateManager.setSpeakerphoneOn(isChecked);//, true);
+                    mAudioStateManager.setSpeakerphoneOn(isChecked);
                 }
                 break;
             }
 
-            case R.id.buttonStartBluetoothSco:
-                mApp.getAudioStateManager().startBluetoothSco();
-                break;
-            case R.id.buttonStopBluetoothSco:
-                mApp.getAudioStateManager().stopBluetoothSco();
-                break;
-
-            case R.id.radioButtonSourceFile:
             case R.id.radioButtonSourceAudioRecord:
                 if (isChecked)
                 {
-                    for (RadioButton button : mAudioSources)
-                    {
-                        if (button != buttonView)
-                        {
-                            button.setChecked(false);
-                        }
-                    }
-
-                    switch (buttonViewId)
-                    {
-                        case R.id.radioButtonSourceFile:
-                        {
-                            enableRadioButtons(mRadioGroupSourceAudioRecord, false);
-
-                            TextView textViewSourceFile = (TextView) findViewById(R.id.textViewSourceFile);
-                            String filePath = textViewSourceFile.getText().toString();
-                            // BUG:(pv) This is causing a browse when the orientation changes; need to handle saved instance logic
-                            if (filePath.length() == 0)
-                            {
-                                FileBrowserDialog.showDialog(this, filePath, AUDIO_FILE_ENDS_WITH);
-                                return;
-                            }
-
-                            Log.i(TAG, "Audio source set to: File \"" + filePath + "\"");
-                            break;
-                        }
-                        case R.id.radioButtonSourceAudioRecord:
-                        {
-                            Log.i(TAG, "Audio source set to: Microphone");
-
-                            enableRadioButtons(mRadioGroupSourceAudioRecord, true);
-
-                            int prefAudioInputSourceType = mPreferences.getAudioInputAudioRecordSourceType();
-                            Log.i(TAG,
-                                            "onCheckedChanged: Selecting Input AudioRecord; selecting RadioButton w/ tag==prefAudioInputSourceType="
-                                                            + AudioStateManager.audioInputAudioSourceToString(prefAudioInputSourceType));
-                            checkRadioButtonWithTag(mRadioGroupSourceAudioRecord, prefAudioInputSourceType);
-
-                            break;
-                        }
-                    }
                 }
                 break;
 
             case R.id.radioButtonOutputAudioTrack:
                 if (isChecked)
                 {
-                    enableRadioButtons(mRadioGroupOutputAudioTrack, true);
-
-                    int prefAudioOutputStreamType = mPreferences.getAudioOutputAudioTrackStreamType();
-                    Log.i(TAG,
-                                    "onCheckedChanged: Selecting Output AudioTrack; selecting RadioButton w/ tag==prefAudioOutputStreamType="
-                                                    + AudioStateManager.audioOutputStreamTypeToString(prefAudioOutputStreamType));
-                    checkRadioButtonWithTag(mRadioGroupOutputAudioTrack, prefAudioOutputStreamType);
                 }
                 break;
 
@@ -442,57 +323,31 @@ public class MainActivity //
             //
             case R.id.toggleButtonSource:
             {
-                mApp.audioStopReadingMp3();
-                mApp.audioStopReadingMicrophone();
+                audioStopReadingMp3();
+                audioStopReadingMicrophone();
 
                 if (isChecked)
                 {
-                    RadioButton radioButtonSourceFile = (RadioButton) findViewById(R.id.radioButtonSourceFile);
+                    int checkedRadioButtonId = mRadioGroupSourceAudioRecord.getCheckedRadioButtonId();
+                    RadioButton checkedRadioButton = (RadioButton) findViewById(checkedRadioButtonId);
+                    int audioSource = ((Integer) checkedRadioButton.getTag()).intValue();
 
-                    boolean isSourceFile = radioButtonSourceFile.isChecked();
-                    boolean isSourceMicrophone = mRadioButtonSourceAudioRecord.isChecked();
-
-                    if (isSourceFile)
-                    {
-                        TextView textViewSourceFile = (TextView) findViewById(R.id.textViewSourceFile);
-                        String audioInputFilePath = textViewSourceFile.getText().toString();
-
-                        mPreferences.putAudioInputFilePath(audioInputFilePath);
-
-                        mApp.audioStartReadingMp3();
-                    }
-                    else if (isSourceMicrophone)
-                    {
-                        int checkedRadioButtonId = mRadioGroupSourceAudioRecord.getCheckedRadioButtonId();
-                        RadioButton checkedRadioButton = (RadioButton) findViewById(checkedRadioButtonId);
-                        int audioSource = ((Integer) checkedRadioButton.getTag()).intValue();
-
-                        Log.i(TAG,
-                                        "Audio input starting; saving preference audioSource="
-                                                        + AudioStateManager.audioInputAudioSourceToString(audioSource));
-                        mPreferences.putAudioInputAudioRecordSourceType(audioSource);
-
-                        mApp.audioStartReadingMicrophone();
-                    }
+                    audioStartReadingMicrophone();
                 }
 
                 break;
             }
             case R.id.toggleButtonSpeaker:
             {
-                mApp.audioStopPlayingSource();
+                audioStopPlayingSource();
+
                 if (isChecked)
                 {
                     int checkedRadioButtonId = mRadioGroupOutputAudioTrack.getCheckedRadioButtonId();
                     RadioButton checkedRadioButton = (RadioButton) findViewById(checkedRadioButtonId);
                     int streamType = ((Integer) checkedRadioButton.getTag()).intValue();
 
-                    Log.i(TAG,
-                                    "Audio output starting; saving preference streamType="
-                                                    + AudioStateManager.audioOutputStreamTypeToString(streamType));
-                    mPreferences.putAudioOutputAudioTrackStreamType(streamType);
-
-                    mApp.audioStartPlayingSource();
+                    audioStartPlayingSource();
                 }
                 break;
             }
@@ -508,15 +363,11 @@ public class MainActivity //
             case R.id.radioGroupSourceAudioRecord:
             {
                 Integer audioSource = (Integer) getRadioButtonTag(mRadioGroupSourceAudioRecord, checkedId);
-                mPreferences.putAudioInputAudioRecordSourceType(audioSource.intValue());
                 break;
             }
             case R.id.radioGroupOutputAudioTrack:
             {
-                //mApp.resetPreviousAudioOutputAudioTrackStreamType();
-
                 Integer streamType = (Integer) getRadioButtonTag(mRadioGroupOutputAudioTrack, checkedId);
-                mPreferences.putAudioOutputAudioTrackStreamType(streamType.intValue());
                 break;
             }
         }
@@ -576,29 +427,6 @@ public class MainActivity //
         }
     }
 
-    public void onFinishFileSelected(String path)
-    {
-        TextView textViewSourceFile = (TextView) findViewById(R.id.textViewSourceFile);
-        textViewSourceFile.setText(path);
-        mPreferences.putAudioInputFilePath(path);
-    }
-
-    /*
-    public void requestUpdateBluetoothIndication()
-    {
-        if (VDBG)
-        {
-            Log.d(TAG, "requestUpdateBluetoothIndication()...");
-        }
-
-        // No need to look at the current state here; any UI elements that
-        // care about the bluetooth state (i.e. the CallCard) get
-        // the necessary state directly from PhoneApp.showBluetoothIndication().
-        //mHandler.removeMessages(REQUEST_UPDATE_BLUETOOTH_INDICATION);
-        //mHandler.sendEmptyMessage(REQUEST_UPDATE_BLUETOOTH_INDICATION);
-    }
-    */
-
     protected void updateScreen()
     {
         if (DBG)
@@ -606,26 +434,11 @@ public class MainActivity //
             Log.d(TAG, "updateScreen()...");
         }
 
-        // Don't update anything if we're not in the foreground (there's
-        // no point updating our UI widgets since we're not visible!)
-        // Also note this check also ensures we won't update while we're
-        // in the middle of pausing, which could cause a visible glitch in
-        // the "activity ending" transition.
-        if (!mApp.isForegroundContext(this))
-        {
-            if (DBG)
-            {
-                Log.w(TAG, "updateScreen(): not in foreground; return;");
-            }
-            return;
-        }
-
-        AudioStateManager audioStateManager = mApp.getAudioStateManager();
-        int audioMode = audioStateManager.getMode();
+        int audioMode = mAudioStateManager.getMode();
         //boolean isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected();
         //boolean isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected();
-        boolean isBluetoothScoOn = audioStateManager.isBluetoothScoOn();
-        boolean isSpeakerphoneOn = audioStateManager.isSpeakerphoneOn();
+        boolean isBluetoothScoOn = mAudioStateManager.isBluetoothScoOn();
+        boolean isSpeakerphoneOn = mAudioStateManager.isSpeakerphoneOn();
 
         //
         //
@@ -635,15 +448,6 @@ public class MainActivity //
         //
         //
         //
-        mRadioButtonModeInCall.setChecked(audioMode == AudioManager.MODE_IN_CALL);
-        mRadioButtonModeInCommunication.setChecked(audioMode == AudioManager.MODE_IN_COMMUNICATION);
-        mRadioButtonModeNormal.setChecked(audioMode == AudioManager.MODE_NORMAL);
-        mRadioButtonModeRingtone.setChecked(audioMode == AudioManager.MODE_RINGTONE);
-
-        //
-        //
-        //
-        //mCheckBoxSetBluetoothScoOn.setEnabled(isBluetoothHeadsetConnected);
         mCheckBoxSetBluetoothScoOn.setChecked(isBluetoothScoOn);
         mCheckBoxSetSpeakerphoneOn.setChecked(isSpeakerphoneOn);
     }
@@ -657,18 +461,18 @@ public class MainActivity //
 
         switch (msg.what)
         {
-            case LoopbackApp.MSG_UPDATE_BUFFER_COUNT:
+            case MSG_UPDATE_BUFFER_COUNT:
             {
-                msg.getTarget().removeMessages(LoopbackApp.MSG_UPDATE_BUFFER_COUNT);
+                msg.getTarget().removeMessages(MSG_UPDATE_BUFFER_COUNT);
 
                 int audioBufferCount = msg.arg1;
                 int audioBufferPoolCount = msg.arg2;
-                mTextViewBufferCount.setText(String.valueOf(audioBufferCount));
-                mTextViewBufferPoolCount.setText(String.valueOf(audioBufferPoolCount));
+                //mTextViewBufferCount.setText(String.valueOf(audioBufferCount));
+                //mTextViewBufferPoolCount.setText(String.valueOf(audioBufferPoolCount));
                 break;
             }
 
-            case LoopbackApp.MSG_UPDATE_BLUETOOTH_INDICATION:
+            case MSG_UPDATE_BLUETOOTH_INDICATION:
             {
                 if (DBG)
                 {
@@ -684,17 +488,191 @@ public class MainActivity //
                 break;
             }
 
-            case LoopbackApp.MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE:
+            case MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE:
             {
-                int previousAudioOutputAudioTrackStreamType = mApp.getPreviousAudioOutputAudioTrackStreamType();
-
-                int prefAudioOutputStreamType = mPreferences.getAudioOutputAudioTrackStreamType();
-                Log.i(TAG,
-                                "handleMessage: Selecting RadioButton w/ tag==prefAudioOutputStreamType="
-                                                + AudioStateManager.audioOutputStreamTypeToString(prefAudioOutputStreamType));
-                checkRadioButtonWithTag(mRadioGroupOutputAudioTrack, prefAudioOutputStreamType);
                 break;
             }
         }
+    }
+
+    public void onSpeakerphoneOn()
+    {
+        Log.i(TAG, "onSpeakerphoneOn()");
+    }
+
+    public void onSpeakerphoneOff()
+    {
+        Log.i(TAG, "onSpeakerphoneOff()");
+    }
+
+    public void onWiredHeadsetConnection(int state, String name, int microphone)
+    {
+        Log.i(TAG, "onWiredHeadsetConnection(state=" + state + ", name=" + name + ", microphone=" + microphone + ")");
+    }
+
+    public void onDockConnection(int state)
+    {
+        Log.i(TAG, "onDockConnection(" + state + ")");
+    }
+
+    public void onBluetoothHeadsetConnected()
+    {
+        Log.i(TAG, "onBluetoothHeadsetConnected()");
+
+        if (mAudioStateManager.isBluetoothScoAvailableOffCall())
+        {
+            mAudioStateManager.startBluetoothSco();
+        }
+
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+    }
+
+    public void onBluetoothHeadsetDisconnected()
+    {
+        Log.i(TAG, "onBluetoothHeadsetDisconnected()");
+
+        //if (mAudioStateManager.isBluetoothScoOn())
+        //{
+        mAudioStateManager.stopBluetoothSco();
+        //}
+
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+    }
+
+    public void onBluetoothHeadsetAudioConnected()
+    {
+        Log.i(TAG, "onBluetoothHeadsetAudioConnected()");
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+    }
+
+    public void onBluetoothHeadsetAudioDisconnected()
+    {
+        Log.i(TAG, "onBluetoothHeadsetAudioDisconnected()");
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+    }
+
+    public void onAudioManagerScoAudioConnected()
+    {
+        Log.i(TAG, "onAudioManagerScoAudioConnected()");
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+
+        /*
+        if (mPreviousAudioOutputAudioTrackStreamType != -1)
+        {
+            Log.e(TAG, "previousAudioOutputAudioTrackStreamType already set; headset reporting");
+            return;
+        }
+        */
+
+        // TODO:(pv) If speaker is playing, close and re-open speaker
+
+        int streamType = AudioManager.STREAM_VOICE_CALL;
+
+        mHandler //
+        .obtainMessage(MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE) //
+        .sendToTarget();
+    }
+
+    public void onAudioManagerScoAudioDisconnected(boolean error)
+    {
+        Log.i(TAG, "onAudioManagerScoAudioDisconnected()");
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
+        .sendToTarget();
+
+        // Force SCO off to try to repair what appears to be internal BT SCO state bugs in the OS.
+        // Sometimes the only way to get SCO to connect is to reboot the phone and/or turn BT off and then back on.
+        mAudioStateManager.stopBluetoothSco();
+
+        /*
+        if (mPreviousAudioOutputAudioTrackStreamType == -1)
+        {
+            Log.e(TAG, "Not restoring previousAudioOutputAudioTrackStreamType because it is not set");
+            return;
+        }
+
+        Log.e(TAG,
+                        "Restoring previousAudioOutputAudioTrackStreamType="
+                                        + AudioStateManager.audioOutputStreamTypeToString(mPreviousAudioOutputAudioTrackStreamType));
+        int streamType = mPreviousAudioOutputAudioTrackStreamType;
+
+        resetPreviousAudioOutputAudioTrackStreamType();
+        */
+
+        // TODO:(pv) If speaker is playing, close and re-open speaker
+
+        mHandler //
+        .obtainMessage(MSG_UPDATE_AUDIO_OUTPUT_STREAM_TYPE) //
+        .sendToTarget();
+    }
+
+    private void audioStartPlayingSource()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    private void audioStopPlayingSource()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    private void audioStartReadingMicrophone()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    private void audioStopReadingMicrophone()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    private void audioStopReadingMp3()
+    {
+        // TODO Auto-generated method stub
+    }
+
+    public void onAudioPlayerBuffer()
+    {
+        if (VDBG)
+        {
+            Log.i(TAG, "onAudioPlayerBuffer()");
+        }
+        onAudioBuffer();
+    }
+
+    public void onAudioRecorderBuffer()
+    {
+        if (VDBG)
+        {
+            Log.i(TAG, "onAudioRecorderBuffer()");
+        }
+        onAudioBuffer();
+    }
+
+    public void onAudioBuffer()
+    {
+        /*
+        int audioBufferCount = mAudioBuffers.size();
+        int audioBufferPoolCount = mAudioBuffersPool.size();
+
+        if (VDBG)
+        {
+            Log.i(TAG, "mAudioBuffers.size()=" + audioBufferCount + ", mAudioBuffersPool.size()=" + audioBufferPoolCount);
+        }
+
+        mHandler //
+        .obtainMessage(MSG_UPDATE_BUFFER_COUNT, audioBufferCount, audioBufferPoolCount) //
+        .sendToTarget();
+        */
     }
 }

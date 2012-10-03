@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.twistpair.wave.experimental.loopback;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
@@ -11,8 +11,6 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
-
-import com.twistpair.wave.experimental.loopback.AppUtils;
 
 /**
  * @author Paul Peavyhouse (pv@twistpair.com)
@@ -455,69 +453,78 @@ public class AudioStateManager
 
         setBluetoothScoOn(true);
 
-        final long max = 5000;
-        final long start = SystemClock.elapsedRealtime();
-
-        Thread thread = new Thread()
+        if (true)
         {
-            @Override
-            public void run()
+            Log.i(TAG, "mAudioManager.startBluetoothSco();");
+            mAudioManager.startBluetoothSco(); // API 8
+        }
+        else
+        {
+            final long max = 5000;
+            final long start = SystemClock.elapsedRealtime();
+
+            Thread thread = new Thread()
             {
-                long now = SystemClock.elapsedRealtime();
-                long elapsed = now - start;
-
-                int attemptNumber = 0;
-
-                while (true)
+                @Override
+                public void run()
                 {
-                    attemptNumber++;
-                    Log.i(TAG, "startBluetoothSco() attempt #" + attemptNumber);
+                    long now = SystemClock.elapsedRealtime();
+                    long elapsed = now - start;
 
-                    if (isBluetoothHeadsetConnected())
+                    int attemptNumber = 0;
+
+                    while (true)
                     {
-                        Log.i(TAG, "Found Bluetooth headset");
-                        if (isBluetoothScoOn())
-                        {
-                            Log.w(TAG, "isBluetoothScoOn()==true after " + attemptNumber + " attempts over " + elapsed + " ms");
+                        attemptNumber++;
+                        Log.i(TAG, "startBluetoothSco() attempt #" + attemptNumber);
 
-                            mAudioManagerScoAudioState = AudioManager.SCO_AUDIO_STATE_CONNECTED;
-                            mListener.onAudioManagerScoAudioConnected();
-                            return;
+                        if (isBluetoothHeadsetConnected())
+                        {
+                            Log.i(TAG, "Found Bluetooth headset");
+                            if (isBluetoothScoOn())
+                            {
+                                Log.w(TAG, "isBluetoothScoOn()==true after " + attemptNumber + " attempts over " + elapsed
+                                                + " ms");
+
+                                mAudioManagerScoAudioState = AudioManager.SCO_AUDIO_STATE_CONNECTED;
+                                mListener.onAudioManagerScoAudioConnected();
+                                return;
+                            }
+                            else
+                            {
+                                Log.i(TAG, "isBluetoothScoOn()==false; mAudioManager.startBluetoothSco();");
+                                mAudioManager.startBluetoothSco(); // API 8
+                            }
                         }
                         else
                         {
-                            Log.i(TAG, "isBluetoothScoOn()==false; mAudioManager.startBluetoothSco();");
-                            mAudioManager.startBluetoothSco(); // API 8
+                            Log.i(TAG, "Waiting for Bluetooth headset");
+                        }
+
+                        now = SystemClock.elapsedRealtime();
+                        elapsed = now - start;
+                        if (elapsed > max)
+                        {
+                            Log.i(TAG, "startBluetoothSco(): isBluetoothScoOn()==false after " + max + " ms");
+                            return;
+                        }
+
+                        try
+                        {
+                            Log.i(TAG, "startBluetoothSco(): sleep(100);");
+                            sleep(100);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            // ignore
+                            return;
                         }
                     }
-                    else
-                    {
-                        Log.i(TAG, "Waiting for Bluetooth headset");
-                    }
-
-                    now = SystemClock.elapsedRealtime();
-                    elapsed = now - start;
-                    if (elapsed > max)
-                    {
-                        Log.i(TAG, "startBluetoothSco(): isBluetoothScoOn()==false after " + max + " ms");
-                        return;
-                    }
-
-                    try
-                    {
-                        Log.i(TAG, "startBluetoothSco(): sleep(100);");
-                        sleep(100);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        // ignore
-                        return;
-                    }
                 }
-            }
-        };
-        thread.setName("AsyncStartBluetoothSco");
-        thread.start();
+            };
+            thread.setName("AsyncStartBluetoothSco");
+            thread.start();
+        }
     }
 
     public void stopBluetoothSco()
