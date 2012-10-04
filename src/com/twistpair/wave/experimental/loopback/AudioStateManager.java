@@ -480,7 +480,6 @@ public class AudioStateManager
 
                         // App should consider moving to AudioManager.STREAM_VOICE_CALL mode
 
-                        Log.d(TAG, action + ": SCO_AUDIO_STATE_CONNECTED");
                         mListener.onAudioManagerScoAudioConnected();
                         break;
                     }
@@ -492,9 +491,8 @@ public class AudioStateManager
                         // ...but the app should have actively stopped using SCO the moment stopBluetoothSco() was called...
                         // ...or AudioManager.startBluetoothSco() failed.
 
-                        // App should consider moving [back] to AudioManager.STREAM_MUSIC mode
+                        // App should consider moving back to previous stream type [AudioManager.STREAM_MUSIC?].
 
-                        Log.d(TAG, action + ": SCO_AUDIO_STATE_DISCONNECTED");
                         boolean error = scoAudioState == AudioManager.SCO_AUDIO_STATE_ERROR;
                         mListener.onAudioManagerScoAudioDisconnected(error);
                         break;
