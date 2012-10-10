@@ -207,9 +207,13 @@ public class MainActivity //
         }
     }
 
+    private boolean mBluetoothHeadsetConnected = false;
+
     public void onBluetoothHeadsetConnected()
     {
         Log.i(TAG, "onBluetoothHeadsetConnected()");
+
+        mBluetoothHeadsetConnected = true;
 
         if (mAudioStateManager.isBluetoothScoAvailableOffCall())
         {
@@ -224,6 +228,8 @@ public class MainActivity //
     public void onBluetoothHeadsetDisconnected()
     {
         Log.i(TAG, "onBluetoothHeadsetDisconnected()");
+
+        mBluetoothHeadsetConnected = false;
 
         //if (mAudioStateManager.isBluetoothScoOn())
         //{
@@ -277,7 +283,7 @@ public class MainActivity //
 
     public void onAudioManagerScoAudioDisconnected(boolean error)
     {
-        Log.i(TAG, "onAudioManagerScoAudioDisconnected()");
+        Log.i(TAG, "onAudioManagerScoAudioDisconnected(error=" + error + ")");
         mHandler //
         .obtainMessage(MSG_UPDATE_BLUETOOTH_INDICATION) //
         .sendToTarget();
@@ -285,6 +291,16 @@ public class MainActivity //
         // Force SCO off to try to repair what appears to be internal BT SCO state bugs in the OS.
         // Sometimes the only way to get SCO to connect is to reboot the phone and/or turn BT off and then back on.
         //mAudioStateManager.stopBluetoothSco();
+
+        /*
+        if (mBluetoothHeadsetConnected)
+        {
+            if (mAudioStateManager.isBluetoothScoAvailableOffCall())
+            {
+                mAudioStateManager.startBluetoothSco();
+            }
+        }
+        */
 
         /*
         if (mPreviousAudioOutputAudioTrackStreamType == -1)

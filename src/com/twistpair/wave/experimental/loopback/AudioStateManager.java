@@ -30,54 +30,6 @@ public class AudioStateManager
         void onAudioManagerScoAudioDisconnected(boolean error);
     }
 
-    public static String audioOutputStreamTypeToString(int streamType)
-    {
-        switch (streamType)
-        {
-            case AudioManager.STREAM_ALARM: // API 1
-                return "STREAM_ALARM(" + streamType + ")";
-            case AudioManager.STREAM_DTMF: // API 5
-                return "STREAM_DTMF(" + streamType + ")";
-            case AudioManager.STREAM_MUSIC: // API 1
-                return "STREAM_MUSIC(" + streamType + ")";
-            case AudioManager.STREAM_NOTIFICATION: // API 3
-                return "STREAM_NOTIFICATION(" + streamType + ")";
-            case AudioManager.STREAM_RING: // API 1
-                return "STREAM_RING(" + streamType + ")";
-            case AudioManager.STREAM_SYSTEM: // API 1
-                return "STREAM_SYSTEM(" + streamType + ")";
-            case AudioManager.STREAM_VOICE_CALL: // API 1
-                return "STREAM_VOICE_CALL(" + streamType + ")";
-            default:
-                return "UNKNOWN(" + streamType + ")";
-        }
-    }
-
-    public static String audioInputAudioSourceToString(int audioSource)
-    {
-        switch (audioSource)
-        {
-            case MediaRecorder.AudioSource.CAMCORDER:
-                return "CAMCORDER(" + audioSource + ")";
-            case MediaRecorder.AudioSource.DEFAULT:
-                return "DEFAULT(" + audioSource + ")";
-            case MediaRecorder.AudioSource.MIC:
-                return "MIC(" + audioSource + ")";
-            case MediaRecorder.AudioSource.VOICE_CALL:
-                return "VOICE_CALL(" + audioSource + ")";
-            case MediaRecorder.AudioSource.VOICE_COMMUNICATION:
-                return "VOICE_COMMUNICATION(" + audioSource + ")";
-            case MediaRecorder.AudioSource.VOICE_DOWNLINK:
-                return "VOICE_DOWNLINK(" + audioSource + ")";
-            case MediaRecorder.AudioSource.VOICE_RECOGNITION:
-                return "VOICE_RECOGNITION(" + audioSource + ")";
-            case MediaRecorder.AudioSource.VOICE_UPLINK:
-                return "VOICE_UPLINK(" + audioSource + ")";
-            default:
-                return "UNKNOWN(" + audioSource + ")";
-        }
-    }
-
     public static String bluetoothHeadsetStateToString(int state)
     {
         switch (state)
@@ -122,25 +74,6 @@ public class AudioStateManager
                 return ".SCO_AUDIO_STATE_CONNECTED(" + state + ")";
             case AudioManager.SCO_AUDIO_STATE_CONNECTING: // API 14
                 return "SCO_AUDIO_STATE_CONNECTING(" + state + ")";
-            default:
-                return "UNKNOWN(" + state + ")";
-        }
-    }
-
-    public static String dockStateToString(int state)
-    {
-        switch (state)
-        {
-            case Intent.EXTRA_DOCK_STATE_UNDOCKED: // API 5
-                return "UNDOCKED(" + state + ")";
-            case Intent.EXTRA_DOCK_STATE_DESK: // API 5
-                return "DESK(" + state + ")";
-            case Intent.EXTRA_DOCK_STATE_CAR: // API 5
-                return "CAR(" + state + ")";
-            case Intent.EXTRA_DOCK_STATE_LE_DESK: // API 11
-                return "ANALOG_DESK(" + state + ")";
-            case Intent.EXTRA_DOCK_STATE_HE_DESK: // API 11
-                return "DIGITAL_DESK(" + state + ")";
             default:
                 return "UNKNOWN(" + state + ")";
         }
@@ -367,7 +300,7 @@ public class AudioStateManager
         return mBluetoothHeadsetAudioState == BluetoothHeadset.STATE_AUDIO_CONNECTED;
     }
 
-    public boolean isAudioManagerScoAudioStateConnected()
+    public boolean isAudioManagerScoAudioConnected()
     {
         return mAudioManagerScoAudioState == AudioManager.SCO_AUDIO_STATE_CONNECTED;
     }
