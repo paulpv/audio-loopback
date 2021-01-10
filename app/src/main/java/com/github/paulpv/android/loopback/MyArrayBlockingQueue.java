@@ -6,20 +6,20 @@ import java.util.NoSuchElementException;
  * THREAD SAFE: All methods are internally synchronized.<br>
  * Loosely based on http://developer.android.com/reference/java/util/concurrent/ArrayBlockingQueue.html
  */
-public class WtcArrayBlockingQueue
+public class MyArrayBlockingQueue
 {
-    private static final String TAG = WtcArrayBlockingQueue.class.getSimpleName();
+    private static final String TAG = MyArrayBlockingQueue.class.getSimpleName();
 
-    private final WtcArrayQueue queue;
+    private final MyArrayQueue queue;
 
     /**
      * THREAD SAFE: All methods are internally synchronized.<br>
      * Loosely based on http://developer.android.com/reference/java/util/concurrent/ArrayBlockingQueue.html
      * @param name The name to give this queue to report during maintenance
      */
-    public WtcArrayBlockingQueue(String name)
+    public MyArrayBlockingQueue(String name)
     {
-        queue = new WtcArrayQueue(name);
+        queue = new MyArrayQueue(name);
     }
 
     /**

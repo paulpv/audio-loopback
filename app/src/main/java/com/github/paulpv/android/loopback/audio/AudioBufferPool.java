@@ -1,10 +1,10 @@
 package com.github.paulpv.android.loopback.audio;
 
-import com.github.paulpv.android.loopback.WtcArrayQueue;
+import com.github.paulpv.android.loopback.MyArrayQueue;
 
 public class AudioBufferPool
 {
-    private final WtcArrayQueue queueAudioBufferPool = new WtcArrayQueue("QueueAudioBufferPool");
+    private final MyArrayQueue queueAudioBufferPool = new MyArrayQueue("QueueAudioBufferPool");
 
     public void maintenance(boolean clear)
     {

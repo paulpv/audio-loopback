@@ -8,9 +8,9 @@ import android.util.Log;
  * NOT THREAD SAFE: All methods must be synchronize by the caller as appropriate.<br>
  * Loosely based on http://developer.android.com/reference/java/util/Queue.html
  */
-public class WtcArrayQueue
+public class MyArrayQueue
 {
-    private static final String TAG = WtcArrayQueue.class.getSimpleName();
+    private static final String TAG = MyArrayQueue.class.getSimpleName();
 
     private final String        name;
 
@@ -26,7 +26,7 @@ public class WtcArrayQueue
      * Loosely based on http://developer.android.com/reference/java/util/Queue.html
      * @param name The name to give this queue to report during maintenance
      */
-    public WtcArrayQueue(String name)
+    public MyArrayQueue(String name)
     {
         this.name = name;
         clear();

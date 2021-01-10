@@ -21,7 +21,7 @@ import android.media.AudioFormat;
 import android.util.Log;
 
 import com.github.paulpv.android.loopback.LoopbackApp;
-import com.github.paulpv.android.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.MyArrayBlockingQueue;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -56,16 +56,16 @@ public class Mp3Reader //
     private final int                         mAudioSampleRate;
     private final int                         mAudioChannelConfig;
     private final int                         mAudioEncodingFormat;
-    private final WtcArrayBlockingQueue       mAudioBuffers;
+    private final MyArrayBlockingQueue mAudioBuffers;
     private final AudioBufferPool             mAudioBuffersPool;
     private final AudioRecorderBufferListener mAudioRecorderBufferListener;
 
     private boolean                           mIsRecording;
 
     public Mp3Reader(//Context context, //
-	                String filePath, //
-                    WtcArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
-                    AudioRecorderBufferListener audioRecorderBufferListener) //
+                     String filePath, //
+                     MyArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
+                     AudioRecorderBufferListener audioRecorderBufferListener) //
                     throws FileNotFoundException
     {
 		//mContext = context;

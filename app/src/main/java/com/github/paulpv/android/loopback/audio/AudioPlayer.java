@@ -4,7 +4,7 @@ import android.media.AudioTrack;
 import android.util.Log;
 
 import com.github.paulpv.android.loopback.LoopbackApp;
-import com.github.paulpv.android.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.MyArrayBlockingQueue;
 
 @SuppressWarnings("JavaDoc")
 public class AudioPlayer implements Runnable

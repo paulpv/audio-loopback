@@ -501,7 +501,7 @@ public class LoopbackApp //
     private int                         mAudioPlayerChannelConfig;
     private int                         mAudioPlayerEncodingFormat;
 
-    private final WtcArrayBlockingQueue mAudioBuffers     = new WtcArrayBlockingQueue("QueueAudioBuffers");
+    private final MyArrayBlockingQueue mAudioBuffers     = new MyArrayBlockingQueue("QueueAudioBuffers");
     private final AudioBufferPool       mAudioBuffersPool = new AudioBufferPool();
 
     public void audioStopReadingMp3()

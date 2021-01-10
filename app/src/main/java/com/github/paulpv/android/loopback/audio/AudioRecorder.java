@@ -5,7 +5,7 @@ import android.media.AudioRecord;
 import android.util.Log;
 
 import com.github.paulpv.android.loopback.LoopbackApp;
-import com.github.paulpv.android.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.MyArrayBlockingQueue;
 
 public class AudioRecorder //
                 implements Runnable
