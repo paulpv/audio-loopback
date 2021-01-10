@@ -1,2 +1,6 @@
-/bin
-/gen
+.DS_Store
+local.properties
+
+.gradle/
+.idea/
+app/build/

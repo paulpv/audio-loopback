@@ -6,6 +6,7 @@ import android.util.Log;
 import com.twistpair.wave.experimental.loopback.LoopbackApp;
 import com.twistpair.wave.experimental.loopback.WtcArrayBlockingQueue;
 
+@SuppressWarnings("JavaDoc")
 public class AudioPlayer implements Runnable
 {
     private static final String  TAG  = AudioPlayer.class.getSimpleName();
