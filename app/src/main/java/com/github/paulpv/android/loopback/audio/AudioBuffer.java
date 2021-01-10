@@ -1,4 +1,4 @@
-package com.github.paulpv.android.loopback.loopback.audio;
+package com.github.paulpv.android.loopback.audio;
 
 /**
  * Handles the edge-case situation where the length of a previously allocated buffer differs from what is being requested.<br>

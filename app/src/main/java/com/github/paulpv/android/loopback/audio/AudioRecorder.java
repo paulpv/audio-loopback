@@ -1,11 +1,11 @@
-package com.github.paulpv.android.loopback.loopback.audio;
+package com.github.paulpv.android.loopback.audio;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.util.Log;
 
-import com.github.paulpv.android.loopback.loopback.LoopbackApp;
-import com.github.paulpv.android.loopback.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.LoopbackApp;
+import com.github.paulpv.android.loopback.WtcArrayBlockingQueue;
 
 public class AudioRecorder //
                 implements Runnable

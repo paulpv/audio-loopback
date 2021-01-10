@@ -1,7 +1,4 @@
-package com.github.paulpv.android.loopback.loopback.audio;
-
-
-
+package com.github.paulpv.android.loopback.audio;
 //
 // Uses the JLayer library:
 //  http://www.javazoom.net/javalayer/sources.html
@@ -19,11 +16,25 @@ package com.github.paulpv.android.loopback.loopback.audio;
 //  https://github.com/libgdx/libgdx/tree/master/extensions/gdx-audio
 //  http://www.android-db.net/78628/Android-encoder-in-Mp3-stereo.html
 //
-import android.media.*;
-import android.util.*;
-import com.github.paulpv.android.loopback.loopback.*;
-import java.io.*;
-import javazoom.jl.decoder.*;
+
+import android.media.AudioFormat;
+import android.util.Log;
+
+import com.github.paulpv.android.loopback.LoopbackApp;
+import com.github.paulpv.android.loopback.WtcArrayBlockingQueue;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.BitstreamException;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.DecoderException;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
 
 public class Mp3Reader //
                 implements Runnable

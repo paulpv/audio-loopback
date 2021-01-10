@@ -1,6 +1,6 @@
-package com.github.paulpv.android.loopback.loopback.audio;
+package com.github.paulpv.android.loopback.audio;
 
-import com.github.paulpv.android.loopback.loopback.WtcArrayQueue;
+import com.github.paulpv.android.loopback.WtcArrayQueue;
 
 public class AudioBufferPool
 {
