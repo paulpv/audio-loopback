@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback;
+package com.github.paulpv.android.loopback;
 
 import java.util.NoSuchElementException;
 

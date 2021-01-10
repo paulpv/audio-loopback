@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.github.paulpv.android.loopback.loopback.audio;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
@@ -12,7 +12,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.twistpair.wave.experimental.loopback.AppUtils;
+import com.github.paulpv.android.loopback.loopback.AppUtils;
 
 /**
  * @author Paul Peavyhouse (pv@twistpair.com)

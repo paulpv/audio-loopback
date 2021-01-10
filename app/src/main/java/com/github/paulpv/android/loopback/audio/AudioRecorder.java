@@ -1,11 +1,11 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.github.paulpv.android.loopback.loopback.audio;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.util.Log;
 
-import com.twistpair.wave.experimental.loopback.LoopbackApp;
-import com.twistpair.wave.experimental.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.loopback.LoopbackApp;
+import com.github.paulpv.android.loopback.loopback.WtcArrayBlockingQueue;
 
 public class AudioRecorder //
                 implements Runnable

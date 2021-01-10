@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback;
+package com.github.paulpv.android.loopback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,9 +11,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;

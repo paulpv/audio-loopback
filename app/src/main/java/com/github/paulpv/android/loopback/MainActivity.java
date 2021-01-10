@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback;
+package com.github.paulpv.android.loopback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,6 @@ import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,8 +19,10 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.twistpair.wave.experimental.loopback.FileBrowserDialog.FileBrowserDialogListener;
-import com.twistpair.wave.experimental.loopback.audio.AudioStateManager;
+import androidx.fragment.app.FragmentActivity;
+
+import com.github.paulpv.android.loopback.FileBrowserDialog.FileBrowserDialogListener;
+import com.github.paulpv.android.loopback.audio.AudioStateManager;
 
 //
 // Audio ideas came from TPS code and:

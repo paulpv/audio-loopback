@@ -1,4 +1,4 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.github.paulpv.android.loopback.loopback.audio;
 
 
 
@@ -21,7 +21,7 @@ package com.twistpair.wave.experimental.loopback.audio;
 //
 import android.media.*;
 import android.util.*;
-import com.twistpair.wave.experimental.loopback.*;
+import com.github.paulpv.android.loopback.loopback.*;
 import java.io.*;
 import javazoom.jl.decoder.*;
 

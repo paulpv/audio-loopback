@@ -1,13 +1,20 @@
-package com.twistpair.wave.experimental.loopback;
+package com.github.paulpv.android.loopback;
 
-import android.app.*;
-import android.content.*;
-import android.media.*;
-import android.os.*;
-import android.util.*;
-import com.twistpair.wave.experimental.loopback.audio.*;
-import com.twistpair.wave.experimental.loopback.audio.AudioPlayer.*;
-import com.twistpair.wave.experimental.loopback.audio.AudioStateManager.*;
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+
+import com.github.paulpv.android.loopback.audio.AudioBufferPool;
+import com.github.paulpv.android.loopback.audio.AudioPlayer;
+import com.github.paulpv.android.loopback.audio.AudioRecorder;
+import com.github.paulpv.android.loopback.audio.AudioStateManager;
+import com.github.paulpv.android.loopback.audio.Mp3Reader;
+
 import java.io.*;
 import java.util.*;
 //import android.bluetooth.BluetoothDevice;
@@ -16,8 +23,8 @@ import java.util.*;
 // https://github.com/android/platform_packages_apps_phone/blob/master/src/com/android/phone/PhoneApp.java
 public class LoopbackApp //
                 extends Application //
-                implements AudioStateListener, //
-                AudioPlayerBufferListener, //
+                implements AudioStateManager.AudioStateListener, //
+                AudioPlayer.AudioPlayerBufferListener, //
                 AudioRecorder.AudioRecorderBufferListener, //
                 Mp3Reader.AudioRecorderBufferListener //
 {
@@ -137,6 +144,8 @@ public class LoopbackApp //
     @Override
     public void onCreate()
     {
+        super.onCreate();
+
         mHandler = new Handler()
         {
             @Override
@@ -176,7 +185,7 @@ public class LoopbackApp //
 
     /**
      * Finds and returns the requested foreground activity, or null if one does not exist. 
-     * @param activityClass the requested Activity class to find
+     * @param contextClass the requested Activity class to find
      * @return the requested foreground activity, or null if one does not exist
      */
     public Context getForegroundContext(Class<?> contextClass)

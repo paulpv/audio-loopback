@@ -1,6 +1,6 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.github.paulpv.android.loopback.loopback.audio;
 
-import com.twistpair.wave.experimental.loopback.WtcArrayQueue;
+import com.github.paulpv.android.loopback.loopback.WtcArrayQueue;
 
 public class AudioBufferPool
 {

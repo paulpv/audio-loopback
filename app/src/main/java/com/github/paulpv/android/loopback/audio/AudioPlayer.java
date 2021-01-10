@@ -1,10 +1,10 @@
-package com.twistpair.wave.experimental.loopback.audio;
+package com.github.paulpv.android.loopback.loopback.audio;
 
 import android.media.AudioTrack;
 import android.util.Log;
 
-import com.twistpair.wave.experimental.loopback.LoopbackApp;
-import com.twistpair.wave.experimental.loopback.WtcArrayBlockingQueue;
+import com.github.paulpv.android.loopback.loopback.LoopbackApp;
+import com.github.paulpv.android.loopback.loopback.WtcArrayBlockingQueue;
 
 @SuppressWarnings("JavaDoc")
 public class AudioPlayer implements Runnable

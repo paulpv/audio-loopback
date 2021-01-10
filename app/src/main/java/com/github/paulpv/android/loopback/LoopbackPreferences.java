@@ -1,6 +1,6 @@
-package com.twistpair.wave.experimental.loopback;
+package com.github.paulpv.android.loopback;
 
-import com.twistpair.wave.experimental.loopback.audio.AudioStateManager;
+import com.github.paulpv.android.loopback.audio.AudioStateManager;
 
 import android.app.Activity;
 import android.content.Context;
