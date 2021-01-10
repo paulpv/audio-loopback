@@ -56,7 +56,7 @@ public class Mp3Reader //
     private final int                         mAudioSampleRate;
     private final int                         mAudioChannelConfig;
     private final int                         mAudioEncodingFormat;
-    private final MyArrayBlockingQueue mAudioBuffers;
+    private final MyArrayBlockingQueue        mAudioBuffers;
     private final AudioBufferPool             mAudioBuffersPool;
     private final AudioRecorderBufferListener mAudioRecorderBufferListener;
 

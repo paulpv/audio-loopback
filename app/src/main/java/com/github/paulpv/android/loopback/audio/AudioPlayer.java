@@ -24,7 +24,7 @@ public class AudioPlayer implements Runnable
     private final int                       mAudioSampleRate;
     private final int                       mAudioChannelConfig;
     private final int                       mAudioEncodingFormat;
-    private final WtcArrayBlockingQueue     mAudioBuffers;
+    private final MyArrayBlockingQueue      mAudioBuffers;
     private final AudioBufferPool           mAudioBuffersPool;
     private final AudioPlayerBufferListener mAudioPlayerBufferListener;
 
@@ -47,9 +47,9 @@ public class AudioPlayer implements Runnable
      * @param audioPlayerBufferListener
      */
     public AudioPlayer(int audioStreamType, //
-                    int audioSampleRate, int audioChannelConfig, int audioEncodingFormat, //
-                    WtcArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
-                    AudioPlayerBufferListener audioPlayerBufferListener)
+                       int audioSampleRate, int audioChannelConfig, int audioEncodingFormat, //
+                       MyArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
+                       AudioPlayerBufferListener audioPlayerBufferListener)
     {
         this.mAudioStreamType = audioStreamType;
         mAudioSampleRate = audioSampleRate;

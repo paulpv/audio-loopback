@@ -24,7 +24,7 @@ public class AudioRecorder //
     private final int                         mAudioSource;
     private final int                         mAudioSampleRate;
     private final int                         mAudioEncodingFormat;
-    private final WtcArrayBlockingQueue       mAudioBuffers;
+    private final MyArrayBlockingQueue        mAudioBuffers;
     private final AudioBufferPool             mAudioBuffersPool;
     private final AudioRecorderBufferListener mAudioRecorderBufferListener;
 
@@ -45,9 +45,9 @@ public class AudioRecorder //
      * @param audioRecorderBufferListener
      */
     public AudioRecorder(int audioSource, //
-                    int audioSampleRate, int audioEncodingFormat, //
-                    WtcArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
-                    AudioRecorderBufferListener audioRecorderBufferListener)
+                         int audioSampleRate, int audioEncodingFormat, //
+                         MyArrayBlockingQueue audioBuffers, AudioBufferPool audioBuffersPool, //
+                         AudioRecorderBufferListener audioRecorderBufferListener)
     {
         mAudioSource = audioSource;
         mAudioSampleRate = audioSampleRate;
