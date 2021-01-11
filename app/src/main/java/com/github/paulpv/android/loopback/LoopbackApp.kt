@@ -153,7 +153,7 @@ class LoopbackApp //
         Log.i(TAG, "onSpeakerphoneOff()")
     }
 
-    override fun onWiredHeadsetConnection(state: Int, name: String, microphone: Int) {
+    override fun onWiredHeadsetConnection(state: Int, name: String?, microphone: Int) {
         Log.i(TAG, "onWiredHeadsetConnection(state=$state, name=$name, microphone=$microphone)")
         /*
         Log.i(TAG, "EVENT_WIRED_HEADSET_PLUG");

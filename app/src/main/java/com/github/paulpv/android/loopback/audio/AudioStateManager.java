@@ -12,6 +12,8 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.github.paulpv.android.loopback.AppUtils;
 
 /**
@@ -59,7 +61,7 @@ public class AudioStateManager
          * @param name Headset type, human readable string
          * @param microphone 1 if headset has a microphone, 0 otherwise
          */
-        void onWiredHeadsetConnection(int state, String name, int microphone);
+        void onWiredHeadsetConnection(int state, @Nullable String name, int microphone);
 
         /**
          * {@link Intent#ACTION_DOCK_EVENT} 
