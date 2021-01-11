@@ -5,6 +5,12 @@ package com.github.paulpv.android.loopback.audio;
 //  http://www.javazoom.net/javalayer/docs/docs1.0/index.html
 //
 // TODO:(pv) Get this to work native:
+// 2021:
+//  https://medium.com/@donturner/using-ffmpeg-for-faster-audio-decoding-967894e94e71
+//  https://developer.android.com/guide/topics/media/media-formats
+//  https://developer.android.com/reference/android/media/MediaCodec
+//  https://github.com/delthas/JavaMP3
+// pre-2021:
 //  http://www.badlogicgames.com/wordpress/?p=446
 //  http://stackoverflow.com/questions/11495578/prebuilt-ffmpeg-library-for-android
 //  http://stackoverflow.com/questions/4725773/ffmpeg-on-android
