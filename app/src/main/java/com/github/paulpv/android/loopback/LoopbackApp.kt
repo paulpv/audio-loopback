@@ -342,6 +342,7 @@ class LoopbackApp //
     private var mAudioPlayerEncodingFormat = 0
     private val mAudioBuffers = MyArrayBlockingQueue("QueueAudioBuffers")
     private val mAudioBuffersPool = AudioBufferPool()
+
     fun audioStopReadingMp3() {
         if (mMp3Reader != null) {
             mMp3Reader!!.stop()

@@ -7,6 +7,7 @@ import android.util.Log;
 import com.github.paulpv.android.loopback.LoopbackApp;
 import com.github.paulpv.android.loopback.MyArrayBlockingQueue;
 
+@SuppressWarnings("JavaDoc")
 public class AudioRecorder //
                 implements Runnable
 {
