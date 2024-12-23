@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
-import com.github.paulpv.android.loopback.FileBrowserDialog.FileBrowserDialogListener
 import com.github.paulpv.android.loopback.audio.AudioStateManager
 import com.github.paulpv.android.loopback.databinding.ActivityMainBinding
 import com.github.paulpv.android.loopback.ui.theme.AudioLoopbackTheme
@@ -30,8 +29,8 @@ import java.util.Locale
 //  http://android-er.blogspot.com/2012/06/audiorecord-and-audiotrack.html
 //
 class MainActivity //
-//
-    : FragmentActivity(), CompoundButton.OnCheckedChangeListener, RadioGroup.OnCheckedChangeListener, FileBrowserDialogListener //
+    : FragmentActivity(), //
+    CompoundButton.OnCheckedChangeListener, RadioGroup.OnCheckedChangeListener //
 {
     private lateinit var mApp: LoopbackApp
     private lateinit var mPreferences: LoopbackPreferences
@@ -60,23 +59,11 @@ class MainActivity //
      * This collection is used to track the RadioButtons and determine which radio button is selected.
      */
     private val mAudioSources: MutableList<RadioButton?> = ArrayList()
-    override fun onSaveInstanceState(outState: Bundle) {
-        val audioInputFilePath = (findViewById<View>(R.id.textViewSourceFile) as TextView).text.toString()
-        outState.putString("audioInputFilePath", audioInputFilePath)
-
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(outState)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mApp = application as LoopbackApp
         mPreferences = mApp.preferences
-        val audioInputFilePath = if (savedInstanceState == null) {
-            mPreferences.audioInputFilePath
-        } else {
-            savedInstanceState.getString("audioInputFilePath")
-        }
 
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(
             true // default to enabled
@@ -116,17 +103,6 @@ class MainActivity //
         //
         //
         //
-
-        val radioButtonSourceFile = binding.radioButtonSourceFile
-        mAudioSources.add(radioButtonSourceFile)
-        radioButtonSourceFile.setOnCheckedChangeListener(this)
-
-        binding.textViewSourceFile.text = audioInputFilePath
-        binding.textViewSourceFile.setOnClickListener { v ->
-            // Pass in any existing path...
-            val filePath = (v as TextView).text.toString()
-            FileBrowserDialog.showDialog(this@MainActivity, filePath, AUDIO_FILE_ENDS_WITH)
-        }
 
         binding.radioButtonSourceAudioRecordCamcorder.tag = MediaRecorder.AudioSource.CAMCORDER
         binding.radioButtonSourceAudioRecordDefault.tag = MediaRecorder.AudioSource.DEFAULT
@@ -253,33 +229,18 @@ class MainActivity //
             }
             R.id.buttonStartBluetoothSco -> mApp.audioStateManager.startBluetoothSco()
             R.id.buttonStopBluetoothSco -> mApp.audioStateManager.stopBluetoothSco()
-            R.id.radioButtonSourceFile, R.id.radioButtonSourceAudioRecord -> if (isChecked) {
+            R.id.radioButtonSourceAudioRecord -> if (isChecked) {
                 for (button in mAudioSources) {
                     if (button !== buttonView) {
                         button!!.isChecked = false
                     }
                 }
-                when (buttonViewId) {
-                    R.id.radioButtonSourceFile -> {
-                        enableRadioButtons(binding.radioGroupSourceAudioRecord, false)
-                        val textViewSourceFile = findViewById<View>(R.id.textViewSourceFile) as TextView
-                        val filePath = textViewSourceFile.text.toString()
-                        // BUG:(pv) This is causing a browse when the orientation changes; need to handle saved instance logic
-                        if (filePath.isEmpty()) {
-                            FileBrowserDialog.showDialog(this, filePath, AUDIO_FILE_ENDS_WITH)
-                            return
-                        }
-                        Log.i(TAG, "Audio source set to: File \"$filePath\"")
-                    }
-                    R.id.radioButtonSourceAudioRecord -> {
-                        Log.i(TAG, "Audio source set to: Microphone")
-                        enableRadioButtons(binding.radioGroupSourceAudioRecord, true)
-                        val prefAudioInputSourceType = mPreferences.audioInputAudioRecordSourceType
-                        Log.i(TAG, "onCheckedChanged: Selecting Input AudioRecord; selecting RadioButton w/ tag==prefAudioInputSourceType="
-                                + AudioStateManager.audioInputAudioSourceToString(prefAudioInputSourceType))
-                        checkRadioButtonWithTag(binding.radioGroupSourceAudioRecord, prefAudioInputSourceType)
-                    }
-                }
+                Log.i(TAG, "Audio source set to: Microphone")
+                enableRadioButtons(binding.radioGroupSourceAudioRecord, true)
+                val prefAudioInputSourceType = mPreferences.audioInputAudioRecordSourceType
+                Log.i(TAG, "onCheckedChanged: Selecting Input AudioRecord; selecting RadioButton w/ tag==prefAudioInputSourceType="
+                        + AudioStateManager.audioInputAudioSourceToString(prefAudioInputSourceType))
+                checkRadioButtonWithTag(binding.radioGroupSourceAudioRecord, prefAudioInputSourceType)
             }
             R.id.radioButtonOutputAudioTrack -> if (isChecked) {
                 enableRadioButtons(binding.radioGroupOutputAudioTrack, true)
@@ -289,18 +250,10 @@ class MainActivity //
                 checkRadioButtonWithTag(binding.radioGroupOutputAudioTrack, prefAudioOutputStreamType)
             }
             R.id.toggleButtonSource -> {
-                mApp.audioStopReadingMp3()
                 mApp.audioStopReadingMicrophone()
                 if (isChecked) {
-                    val radioButtonSourceFile = findViewById<View>(R.id.radioButtonSourceFile) as RadioButton
-                    val isSourceFile = radioButtonSourceFile.isChecked
                     val isSourceMicrophone = binding.radioButtonSourceAudioRecord.isChecked
-                    if (isSourceFile) {
-                        val textViewSourceFile = findViewById<View>(R.id.textViewSourceFile) as TextView
-                        val audioInputFilePath = textViewSourceFile.text.toString()
-                        mPreferences.putAudioInputFilePath(audioInputFilePath)
-                        mApp.audioStartReadingMp3()
-                    } else if (isSourceMicrophone) {
+                    if (isSourceMicrophone) {
                         val checkedRadioButtonId = binding.radioGroupSourceAudioRecord.checkedRadioButtonId
                         val checkedRadioButton = findViewById<View>(checkedRadioButtonId) as RadioButton
                         val audioSource = (checkedRadioButton.tag as Int).toInt()
@@ -339,12 +292,6 @@ class MainActivity //
                 mPreferences.putAudioOutputAudioTrackStreamType(streamType!!.toInt())
             }
         }
-    }
-
-    override fun onFinishFileSelected(path: String?) {
-        val textViewSourceFile = findViewById<View>(R.id.textViewSourceFile) as TextView
-        textViewSourceFile.text = path
-        mPreferences.putAudioInputFilePath(path)
     }
 
     /*

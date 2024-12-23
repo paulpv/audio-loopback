@@ -29,19 +29,6 @@ public class LoopbackPreferences
         this.mApp = app;
     }
 
-    public String getAudioInputFilePath()
-    {
-        String value = getString(mApp, PERSONALITY, PREF_KEY_INPUT_FILE_PATH, "");
-        Log.i(TAG, "getAudioInputFilePath()=" + AppUtils.quote(value));
-        return value;
-    }
-
-    public void putAudioInputFilePath(String value)
-    {
-        Log.i(TAG, "putAudioInputFilePath(" + AppUtils.quote(value) + ")");
-        putString(mApp, PERSONALITY, PREF_KEY_INPUT_FILE_PATH, value);
-    }
-
     public int getAudioInputAudioRecordSourceType()
     {
         int value = getInt(mApp, PERSONALITY, PREF_KEY_INPUT_AUDIORECORD_SOURCE_TYPE, MediaRecorder.AudioSource.MIC);

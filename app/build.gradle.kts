@@ -61,8 +61,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    // https://github.com/umjammer/jlayer
-    // https://jitpack.io/#umjammer/jlayer
-    implementation("com.github.umjammer:jlayer:1.0.3")
 }

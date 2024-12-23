@@ -116,25 +116,6 @@
                 android:background="@drawable/customborder"
                 android:orientation="vertical" >
 
-                <LinearLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" >
-
-                    <RadioButton
-                        android:id="@+id/radioButtonSourceFile"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="File:" />
-
-                    <TextView
-                        android:id="@+id/textViewSourceFile"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="4dip"
-                        android:layout_weight="1"
-                        android:background="@drawable/customborder" />
-                </LinearLayout>
-
                 <RadioButton
                     android:id="@+id/radioButtonSourceAudioRecord"
                     android:layout_width="fill_parent"

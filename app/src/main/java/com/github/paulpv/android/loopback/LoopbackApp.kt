@@ -20,7 +20,7 @@ import java.util.*
 // https://github.com/android/platform_packages_apps_phone/blob/master/src/com/android/phone/PhoneApp.java
 class LoopbackApp //
 //
-    : Application(), AudioStateListener, AudioPlayerBufferListener, AudioRecorder.AudioRecorderBufferListener, Mp3Reader.AudioRecorderBufferListener //
+    : Application(), AudioStateListener, AudioPlayerBufferListener, AudioRecorder.AudioRecorderBufferListener //
 {
     //AppNotificationManager       mNotificationManager;
     //private boolean                 mShowBluetoothIndication    = false;
@@ -334,7 +334,6 @@ class LoopbackApp //
     }
 
     // TODO:(pv) Move below code to a Service class...
-    private var mMp3Reader: Mp3Reader? = null
     private var mAudioRecorder: AudioRecorder? = null
     private var mAudioPlayer: AudioPlayer? = null
     private var mAudioPlayerSampleRate = 0
@@ -342,29 +341,6 @@ class LoopbackApp //
     private var mAudioPlayerEncodingFormat = 0
     private val mAudioBuffers = MyArrayBlockingQueue("QueueAudioBuffers")
     private val mAudioBuffersPool = AudioBufferPool()
-
-    fun audioStopReadingMp3() {
-        if (mMp3Reader != null) {
-            mMp3Reader!!.stop()
-            mMp3Reader = null
-        }
-    }
-
-    fun audioStartReadingMp3() {
-        val audioInputFilePath = preferences.audioInputFilePath
-        mMp3Reader = try {
-            Mp3Reader(audioInputFilePath, mAudioBuffers, mAudioBuffersPool, this)
-        } catch (e: FileNotFoundException) {
-            Log.e(TAG, "EXCEPTION: new Mp3Reader($audioInputFilePath, ...)", e)
-            return
-        }
-        mAudioPlayerSampleRate = mMp3Reader!!.audioSampleRate
-        mAudioPlayerChannelConfig = mMp3Reader!!.audioChannelConfig
-        mAudioPlayerEncodingFormat = mMp3Reader!!.audioEncodingFormat
-        val thread = Thread(mMp3Reader)
-        thread.name = "Mp3Reader"
-        thread.start()
-    }
 
     fun audioStopReadingMicrophone() {
         if (mAudioRecorder != null) {
