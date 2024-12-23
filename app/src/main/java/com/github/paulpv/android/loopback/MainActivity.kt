@@ -7,12 +7,23 @@ import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.CompoundButton
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
 import com.github.paulpv.android.loopback.FileBrowserDialog.FileBrowserDialogListener
 import com.github.paulpv.android.loopback.audio.AudioStateManager
 import com.github.paulpv.android.loopback.databinding.ActivityMainBinding
-import java.util.*
+import com.github.paulpv.android.loopback.ui.theme.AudioLoopbackTheme
+import java.util.Locale
 
 //
 // Audio ideas came from TPS code and:
@@ -49,15 +60,15 @@ class MainActivity //
      * This collection is used to track the RadioButtons and determine which radio button is selected.
      */
     private val mAudioSources: MutableList<RadioButton?> = ArrayList()
-    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+    override fun onSaveInstanceState(outState: Bundle) {
         val audioInputFilePath = (findViewById<View>(R.id.textViewSourceFile) as TextView).text.toString()
-        savedInstanceState.putString("audioInputFilePath", audioInputFilePath)
+        outState.putString("audioInputFilePath", audioInputFilePath)
 
         // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState)
+        super.onSaveInstanceState(outState)
     }
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mApp = application as LoopbackApp
         mPreferences = mApp.preferences
@@ -66,6 +77,15 @@ class MainActivity //
         } else {
             savedInstanceState.getString("audioInputFilePath")
         }
+
+        this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(
+            true // default to enabled
+        ) {
+            override fun handleOnBackPressed() {
+                Toast.makeText(this@MainActivity, "Exiting", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        })
 
         //
         //
@@ -165,23 +185,23 @@ class MainActivity //
         binding.toggleButtonSpeaker.setOnCheckedChangeListener(this)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.activity_main, menu)
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val audioStateManager = mApp.audioStateManager
         val isBluetoothHeadsetConnected = audioStateManager.isBluetoothHeadsetConnected
         val isBluetoothHeadsetAudioConnected = audioStateManager.isBluetoothHeadsetAudioConnected
-        val menuBluetoothHeadsetOn = menu.findItem(R.id.menu_bluetoothheadset_on)
-        val menuBluetoothHeadsetOff = menu.findItem(R.id.menu_bluetoothheadset_off)
-        val menuBluetoothHeadsetAudioOn = menu.findItem(R.id.menu_bluetoothheadsetaudio_on)
-        val menuBluetoothHeadsetAudioOff = menu.findItem(R.id.menu_bluetoothheadsetaudio_off)
-        menuBluetoothHeadsetOn.isVisible = isBluetoothHeadsetConnected
-        menuBluetoothHeadsetOff.isVisible = !isBluetoothHeadsetConnected
-        menuBluetoothHeadsetAudioOn.isVisible = isBluetoothHeadsetAudioConnected
-        menuBluetoothHeadsetAudioOff.isVisible = !isBluetoothHeadsetAudioConnected
+        val menuBluetoothHeadsetOn = menu?.findItem(R.id.menu_bluetoothheadset_on)
+        val menuBluetoothHeadsetOff = menu?.findItem(R.id.menu_bluetoothheadset_off)
+        val menuBluetoothHeadsetAudioOn = menu?.findItem(R.id.menu_bluetoothheadsetaudio_on)
+        val menuBluetoothHeadsetAudioOff = menu?.findItem(R.id.menu_bluetoothheadsetaudio_off)
+        menuBluetoothHeadsetOn?.isVisible = isBluetoothHeadsetConnected
+        menuBluetoothHeadsetOff?.isVisible = !isBluetoothHeadsetConnected
+        menuBluetoothHeadsetAudioOn?.isVisible = isBluetoothHeadsetAudioConnected
+        menuBluetoothHeadsetAudioOff?.isVisible = !isBluetoothHeadsetAudioConnected
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -201,13 +221,8 @@ class MainActivity //
         super.onDestroy()
     }
 
-    override fun onBackPressed() {
-        Toast.makeText(this, "Exiting", Toast.LENGTH_SHORT).show()
-        finish()
-    }
-
-    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        when (val buttonViewId = buttonView.id) {
+    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+        when (val buttonViewId = buttonView?.id) {
             R.id.radioButtonModeInCall -> if (isChecked) {
                 Log.i(TAG, "mAudioManager.setMode(AudioManager.MODE_IN_CALL)")
                 mApp.audioStateManager.mode = AudioManager.MODE_IN_CALL
@@ -311,9 +326,9 @@ class MainActivity //
         }
     }
 
-    override fun onCheckedChanged(radioGroup: RadioGroup, checkedId: Int) {
+    override fun onCheckedChanged(radioGroup: RadioGroup?, checkedId: Int) {
         Log.i(TAG, "onCheckedChanged($radioGroup, $checkedId)")
-        when (radioGroup.id) {
+        when (radioGroup?.id) {
             R.id.radioGroupSourceAudioRecord -> {
                 val audioSource = getRadioButtonTag(binding.radioGroupSourceAudioRecord, checkedId) as Int?
                 mPreferences.putAudioInputAudioRecordSourceType(audioSource!!.toInt())
@@ -326,7 +341,7 @@ class MainActivity //
         }
     }
 
-    override fun onFinishFileSelected(path: String) {
+    override fun onFinishFileSelected(path: String?) {
         val textViewSourceFile = findViewById<View>(R.id.textViewSourceFile) as TextView
         textViewSourceFile.text = path
         mPreferences.putAudioInputFilePath(path)
@@ -401,8 +416,9 @@ class MainActivity //
                 msg.target.removeMessages(LoopbackApp.MSG_UPDATE_BUFFER_COUNT)
                 val audioBufferCount = msg.arg1
                 val audioBufferPoolCount = msg.arg2
-                binding.textViewBufferCount.text = audioBufferCount.toString()
-                binding.textViewBufferPoolCount.text = audioBufferPoolCount.toString()
+                val locale = Locale.getDefault()
+                binding.textViewBufferCount.text = String.format(locale, "%d", audioBufferCount)
+                binding.textViewBufferPoolCount.text = String.format(locale, "%d", audioBufferPoolCount)
             }
             LoopbackApp.MSG_UPDATE_BLUETOOTH_INDICATION -> {
                 if (DBG) {

@@ -155,39 +155,28 @@ public class FileBrowserDialog extends DialogFragment
             public void onClick(DialogInterface dialog, int which)
             {
                 FileBrowserItem chosenFileItem = fileList.get(which);
-                switch (chosenFileItem.icon)
-                {
-                    case R.drawable.directory_up:
-                    {
-                        // Browse up to the parent directory
-                        File chosenPath = new File(root.getAbsolutePath()).getParentFile();
+                if (chosenFileItem.icon == R.drawable.directory_up) {
+                    // Browse up to the parent directory
+                    File chosenPath = new File(root.getAbsolutePath()).getParentFile();
 
-                        getDialog().dismiss();
+                    dialog.dismiss();
 
-                        showDialog(activity, chosenPath.getAbsolutePath(), filterFileNameEndsWith);
-                        break;
-                    }
-                    case R.drawable.directory_icon:
-                    {
-                        // Browse down to the child directory
-                        File chosenPath = new File(root.getAbsolutePath(), chosenFileItem.name);
+                    showDialog(activity, chosenPath.getAbsolutePath(), filterFileNameEndsWith);
+                } else if (chosenFileItem.icon == R.drawable.directory_icon) {
+                    // Browse down to the child directory
+                    File chosenPath = new File(root.getAbsolutePath(), chosenFileItem.name);
 
-                        getDialog().dismiss();
+                    dialog.dismiss();
 
-                        showDialog(activity, chosenPath.getAbsolutePath(), filterFileNameEndsWith);
-                        break;
-                    }
-                    case R.drawable.file_icon:
-                    {
-                        // File selected; perform action
-                        File chosenPath = new File(root.getAbsolutePath(), chosenFileItem.name);
+                    showDialog(activity, chosenPath.getAbsolutePath(), filterFileNameEndsWith);
+                } else if (chosenFileItem.icon == R.drawable.file_icon) {
+                    // File selected; perform action
+                    File chosenPath = new File(root.getAbsolutePath(), chosenFileItem.name);
 
-                        FileBrowserDialogListener listener = (FileBrowserDialogListener) activity;
-                        listener.onFinishFileSelected(chosenPath.getAbsolutePath());
+                    FileBrowserDialogListener listener = (FileBrowserDialogListener) activity;
+                    listener.onFinishFileSelected(chosenPath.getAbsolutePath());
 
-                        getDialog().dismiss();
-                        break;
-                    }
+                    dialog.dismiss();
                 }
             }
         });
